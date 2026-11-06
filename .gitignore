@@ -1,0 +1,34 @@
+# Terraform lokale Arbeitsverzeichnisse
+**/.terraform/
+
+# Terraform State und Backups
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+.state-backups/
+*.tfbackup
+
+# Terraform-Variablen (lokal/vertraulich)
+*.tfvars
+*.tfvars.json
+
+# Zugangsdaten und Umgebungsvariablen
+.env
+.env.*
+*.secret
+*.secrets
+devcontainer.env
+credentials.tfrc.json
+.terraformrc
+terraform.rc
+
+# Temporäre Dateien
+*.out
+*.zip
+*.log
+*.tmp
+
+# Betriebssystem / IDE
+.DS_Store
+.vscode/.history/

@@ -1,0 +1,243 @@
+{
+  "btp_subaccount": {
+    "writable": [
+      "beta_enabled",
+      "description",
+      "labels",
+      "name",
+      "parent_id",
+      "region",
+      "skip_auto_entitlement",
+      "subdomain",
+      "usage"
+    ],
+    "covered": [
+      "beta_enabled",
+      "description",
+      "labels",
+      "name",
+      "parent_id",
+      "region",
+      "skip_auto_entitlement",
+      "subdomain",
+      "usage"
+    ],
+    "readonly": [
+      "contract_status",
+      "created_by",
+      "created_date",
+      "id",
+      "last_modified",
+      "parent_features",
+      "state"
+    ]
+  },
+  "btp_subaccount_entitlement": {
+    "writable": [
+      "amount",
+      "plan_name",
+      "plan_unique_identifier",
+      "service_name",
+      "subaccount_id"
+    ],
+    "covered": [
+      "amount",
+      "plan_name",
+      "plan_unique_identifier",
+      "service_name",
+      "subaccount_id"
+    ],
+    "readonly": [
+      "category",
+      "created_date",
+      "id",
+      "last_modified",
+      "plan_id",
+      "state"
+    ]
+  },
+  "btp_subaccount_environment_instance": {
+    "writable": [
+      "environment_type",
+      "landscape_label",
+      "name",
+      "parameters",
+      "plan_name",
+      "service_name",
+      "subaccount_id",
+      "timeouts"
+    ],
+    "covered": [
+      "environment_type",
+      "landscape_label",
+      "name",
+      "parameters",
+      "plan_name",
+      "service_name",
+      "subaccount_id",
+      "timeouts"
+    ],
+    "readonly": [
+      "broker_id",
+      "created_date",
+      "custom_labels",
+      "dashboard_url",
+      "description",
+      "id",
+      "labels",
+      "last_modified",
+      "operation",
+      "plan_id",
+      "platform_id",
+      "service_id",
+      "state",
+      "tenant_id",
+      "type"
+    ]
+  },
+  "btp_subaccount_role_collection_assignment": {
+    "writable": [
+      "attribute_name",
+      "attribute_value",
+      "group_name",
+      "origin",
+      "role_collection_name",
+      "subaccount_id",
+      "user_name"
+    ],
+    "covered": [
+      "attribute_name",
+      "attribute_value",
+      "group_name",
+      "origin",
+      "role_collection_name",
+      "subaccount_id",
+      "user_name"
+    ],
+    "readonly": [
+      "id"
+    ]
+  },
+  "btp_subaccount_service_instance": {
+    "writable": [
+      "labels",
+      "name",
+      "parameters",
+      "service_offering_name",
+      "serviceplan_id",
+      "serviceplan_name",
+      "shared",
+      "subaccount_id",
+      "timeouts"
+    ],
+    "covered": [
+      "labels",
+      "name",
+      "parameters",
+      "service_offering_name",
+      "serviceplan_id",
+      "serviceplan_name",
+      "shared",
+      "subaccount_id",
+      "timeouts"
+    ],
+    "readonly": [
+      "context",
+      "created_date",
+      "dashboard_url",
+      "id",
+      "last_modified",
+      "platform_id",
+      "ready",
+      "referenced_instance_id",
+      "state",
+      "usable"
+    ]
+  },
+  "btp_subaccount_subscription": {
+    "writable": [
+      "app_name",
+      "parameters",
+      "plan_name",
+      "subaccount_id",
+      "timeouts"
+    ],
+    "covered": [
+      "app_name",
+      "parameters",
+      "plan_name",
+      "subaccount_id",
+      "timeouts"
+    ],
+    "readonly": [
+      "additional_plan_features",
+      "app_id",
+      "authentication_provider",
+      "category",
+      "commercial_app_name",
+      "created_date",
+      "customer_developed",
+      "description",
+      "display_name",
+      "formation_solution_name",
+      "globalaccount_id",
+      "id",
+      "labels",
+      "last_modified",
+      "platform_entity_id",
+      "quota",
+      "state",
+      "subscribed_subaccount_id",
+      "subscribed_tenant_id",
+      "subscription_url",
+      "supports_parameters_updates",
+      "supports_plan_updates",
+      "tenant_id"
+    ]
+  },
+  "cloudfoundry_space": {
+    "writable": [
+      "allow_ssh",
+      "annotations",
+      "isolation_segment",
+      "labels",
+      "name",
+      "org"
+    ],
+    "covered": [
+      "allow_ssh",
+      "annotations",
+      "isolation_segment",
+      "labels",
+      "name",
+      "org"
+    ],
+    "readonly": [
+      "created_at",
+      "id",
+      "quota",
+      "updated_at"
+    ]
+  },
+  "cloudfoundry_space_role": {
+    "writable": [
+      "origin",
+      "space",
+      "type",
+      "user",
+      "username"
+    ],
+    "covered": [
+      "origin",
+      "space",
+      "type",
+      "user",
+      "username"
+    ],
+    "readonly": [
+      "created_at",
+      "id",
+      "updated_at"
+    ]
+  }
+}

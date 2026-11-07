@@ -1,0 +1,2630 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "trial",
+        "enterprise"
+      ]
+    },
+    "project_name": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9 -]*$"
+    },
+    "service_catalog": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "service_name": {
+                "type": "string"
+              },
+              "plan_name": {
+                "type": "string"
+              },
+              "amount": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2000000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "plan_unique_identifier": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "profiles": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "trial",
+                        "enterprise"
+                      ]
+                    },
+                    "uniqueItems": true
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": [
+                  "trial",
+                  "enterprise"
+                ]
+              },
+              "instance": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "parameters": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Non-secret JSON object; secrets use parameters_key."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "parameters_key": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Key into sensitive runtime instance_parameters, never a secret value."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "labels": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "uniqueItems": true
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "shared": {
+                        "anyOf": [
+                          {
+                            "type": "boolean"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "serviceplan_id": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Optional actual catalog ID; checked against the named catalog lookup."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "use_plan_names": {
+                        "anyOf": [
+                          {
+                            "type": "boolean"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": false
+                      },
+                      "required_platform": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Required supported_platforms entry from the actual service plan."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "timeouts": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "create": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "update": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "delete": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      }
+                    },
+                    "additionalProperties": false,
+                    "not": {
+                      "required": [
+                        "parameters",
+                        "parameters_key"
+                      ],
+                      "properties": {
+                        "parameters": {
+                          "type": "string"
+                        },
+                        "parameters_key": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "subscription": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Non-secret JSON object."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "parameters_key": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "description": "Key into sensitive runtime subscription_parameters."
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "timeouts": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "create": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "update": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              },
+                              "delete": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      },
+                      "app_name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null
+                      }
+                    },
+                    "additionalProperties": false,
+                    "not": {
+                      "required": [
+                        "parameters",
+                        "parameters_key"
+                      ],
+                      "properties": {
+                        "parameters": {
+                          "type": "string"
+                        },
+                        "parameters_key": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "service_name",
+              "plan_name"
+            ]
+          }
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": {}
+    },
+    "environments": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": true
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[^/]+$",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "subdomain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Actual region code, or null for an unambiguous catalog selection."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "iaas_provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "AWS",
+                  "AZURE",
+                  "GCP",
+                  "SAP",
+                  "ALI",
+                  "IBM"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "runtime": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "btp_regions.environment predicate, not a subaccount API attribute."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "cloudfoundry"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "UNSET",
+                  "NOT_USED_FOR_PRODUCTION",
+                  "USED_FOR_PRODUCTION"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "costcenter": {
+            "type": "string",
+            "pattern": "^[0-9]{5}$"
+          },
+          "beta_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": false
+          },
+          "skip_auto_entitlement": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "labels": {
+            "anyOf": [
+              {
+                "type": "object",
+                "maxProperties": 8,
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "maxLength": 63
+                  },
+                  "uniqueItems": true
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": {}
+          },
+          "administrators_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "yaml",
+                  "legacy"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "yaml"
+          },
+          "administrators": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": []
+          },
+          "administrator_options": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "role_collection_name": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": "Subaccount Administrator"
+                  },
+                  "origin": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": {}
+          },
+          "role_assignments": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "role_collection_name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "user_name": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 256
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "group_name": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "attribute_name": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "attribute_value": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "origin": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "role_collection_name"
+                  ],
+                  "oneOf": [
+                    {
+                      "required": [
+                        "user_name"
+                      ],
+                      "properties": {
+                        "user_name": {
+                          "type": "string"
+                        },
+                        "group_name": {
+                          "type": "null"
+                        },
+                        "attribute_name": {
+                          "type": "null"
+                        },
+                        "attribute_value": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    {
+                      "required": [
+                        "group_name",
+                        "origin"
+                      ],
+                      "properties": {
+                        "group_name": {
+                          "type": "string"
+                        },
+                        "origin": {
+                          "type": "string"
+                        },
+                        "user_name": {
+                          "type": "null"
+                        },
+                        "attribute_name": {
+                          "type": "null"
+                        },
+                        "attribute_value": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    {
+                      "required": [
+                        "attribute_name",
+                        "attribute_value",
+                        "origin"
+                      ],
+                      "properties": {
+                        "attribute_name": {
+                          "type": "string"
+                        },
+                        "attribute_value": {
+                          "type": "string"
+                        },
+                        "origin": {
+                          "type": "string"
+                        },
+                        "user_name": {
+                          "type": "null"
+                        },
+                        "group_name": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": {}
+          },
+          "cloud_foundry": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": false
+                  },
+                  "name": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null
+                  },
+                  "plan": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": "trial"
+                  },
+                  "environment_type": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": "cloudfoundry"
+                  },
+                  "service_name": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": "cloudfoundry"
+                  },
+                  "landscape_label": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": ""
+                  },
+                  "parameters": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "description": "Non-secret JSON; default preserves instance_name."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null
+                  },
+                  "parameters_key": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "description": "Key into sensitive runtime environment_parameters."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null
+                  },
+                  "timeouts": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "create": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "update": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "delete": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null
+                  },
+                  "spaces": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "allow_ssh": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "isolation_segment": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "format": "uuid"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "labels": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "annotations": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "managers": {
+                              "anyOf": [
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "uniqueItems": true
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": []
+                            },
+                            "developers": {
+                              "anyOf": [
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "uniqueItems": true
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": []
+                            },
+                            "member_origin": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "description": "Origin for simple managers/developers; rejected for DEV/project, whose legacy roles have individual origins."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "roles": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                      "type": {
+                                        "type": "string",
+                                        "enum": [
+                                          "space_manager",
+                                          "space_developer",
+                                          "space_auditor",
+                                          "space_supporter"
+                                        ]
+                                      },
+                                      "user": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "format": "uuid"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "default": null
+                                      },
+                                      "username": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "default": null
+                                      },
+                                      "origin": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "default": null
+                                      }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                      "type"
+                                    ],
+                                    "oneOf": [
+                                      {
+                                        "required": [
+                                          "user"
+                                        ],
+                                        "properties": {
+                                          "user": {
+                                            "type": "string"
+                                          },
+                                          "username": {
+                                            "type": "null"
+                                          },
+                                          "origin": {
+                                            "type": "null"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "required": [
+                                          "username"
+                                        ],
+                                        "properties": {
+                                          "username": {
+                                            "type": "string"
+                                          },
+                                          "user": {
+                                            "type": "null"
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": {}
+                            },
+                            "legacy_manager": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "description": "Only DEV/project, implemented by the existing root manager resource; rejected elsewhere.",
+                                  "properties": {
+                                    "user": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uuid"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    },
+                                    "username": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    },
+                                    "origin": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "oneOf": [
+                                    {
+                                      "required": [
+                                        "user"
+                                      ],
+                                      "properties": {
+                                        "user": {
+                                          "type": "string"
+                                        },
+                                        "username": {
+                                          "type": "null"
+                                        },
+                                        "origin": {
+                                          "type": "null"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "required": [
+                                        "username"
+                                      ],
+                                      "properties": {
+                                        "username": {
+                                          "type": "string"
+                                        },
+                                        "user": {
+                                          "type": "null"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "legacy_developer": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "description": "Only DEV/project, implemented by the existing root developer resource; rejected elsewhere.",
+                                  "properties": {
+                                    "user": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "format": "uuid"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    },
+                                    "username": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    },
+                                    "origin": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    }
+                                  },
+                                  "additionalProperties": false,
+                                  "oneOf": [
+                                    {
+                                      "required": [
+                                        "user"
+                                      ],
+                                      "properties": {
+                                        "user": {
+                                          "type": "string"
+                                        },
+                                        "username": {
+                                          "type": "null"
+                                        },
+                                        "origin": {
+                                          "type": "null"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "required": [
+                                        "username"
+                                      ],
+                                      "properties": {
+                                        "username": {
+                                          "type": "string"
+                                        },
+                                        "user": {
+                                          "type": "null"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "name"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": {}
+                  }
+                },
+                "additionalProperties": false,
+                "not": {
+                  "required": [
+                    "parameters",
+                    "parameters_key"
+                  ],
+                  "properties": {
+                    "parameters": {
+                      "type": "string"
+                    },
+                    "parameters_key": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": {}
+          },
+          "services": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "alert_notification": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "enabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": false
+                          },
+                          "plan": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": "standard"
+                          },
+                          "instance": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": true
+                          },
+                          "amount": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 2000000000
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "plan_unique_identifier": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "instance_options": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "parameters": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Non-secret JSON object; secrets use parameters_key."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "parameters_key": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Key into sensitive runtime instance_parameters, never a secret value."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "labels": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          },
+                                          "uniqueItems": true
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "shared": {
+                                    "anyOf": [
+                                      {
+                                        "type": "boolean"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "serviceplan_id": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Optional actual catalog ID; checked against the named catalog lookup."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "use_plan_names": {
+                                    "anyOf": [
+                                      {
+                                        "type": "boolean"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": false
+                                  },
+                                  "required_platform": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Required supported_platforms entry from the actual service plan."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "timeouts": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "create": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          },
+                                          "update": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          },
+                                          "delete": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  }
+                                },
+                                "additionalProperties": false,
+                                "not": {
+                                  "required": [
+                                    "parameters",
+                                    "parameters_key"
+                                  ],
+                                  "properties": {
+                                    "parameters": {
+                                      "type": "string"
+                                    },
+                                    "parameters_key": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": {}
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": {}
+                  },
+                  "feature_flags": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "enabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": false
+                          },
+                          "plan": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": "lite"
+                          },
+                          "instance": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": true
+                          },
+                          "amount": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 2000000000
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "plan_unique_identifier": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "instance_options": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "parameters": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Non-secret JSON object; secrets use parameters_key."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "parameters_key": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Key into sensitive runtime instance_parameters, never a secret value."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "labels": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          },
+                                          "uniqueItems": true
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "shared": {
+                                    "anyOf": [
+                                      {
+                                        "type": "boolean"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "serviceplan_id": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Optional actual catalog ID; checked against the named catalog lookup."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "use_plan_names": {
+                                    "anyOf": [
+                                      {
+                                        "type": "boolean"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": false
+                                  },
+                                  "required_platform": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Required supported_platforms entry from the actual service plan."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "timeouts": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "create": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          },
+                                          "update": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          },
+                                          "delete": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  }
+                                },
+                                "additionalProperties": false,
+                                "not": {
+                                  "required": [
+                                    "parameters",
+                                    "parameters_key"
+                                  ],
+                                  "properties": {
+                                    "parameters": {
+                                      "type": "string"
+                                    },
+                                    "parameters_key": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": {}
+                          },
+                          "dashboard": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": true
+                          },
+                          "dashboard_amount": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 2000000000
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "dashboard_plan_unique_identifier": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "subscription_options": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "parameters": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Non-secret JSON object."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "parameters_key": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Key into sensitive runtime subscription_parameters."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "timeouts": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "create": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          },
+                                          "update": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          },
+                                          "delete": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  }
+                                },
+                                "additionalProperties": false,
+                                "not": {
+                                  "required": [
+                                    "parameters",
+                                    "parameters_key"
+                                  ],
+                                  "properties": {
+                                    "parameters": {
+                                      "type": "string"
+                                    },
+                                    "parameters_key": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": {}
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": {}
+                  },
+                  "work_zone": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "enabled": {
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": false
+                          },
+                          "plan": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "amount": {
+                            "anyOf": [
+                              {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 2000000000
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "plan_unique_identifier": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": null
+                          },
+                          "subscription_options": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "parameters": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Non-secret JSON object."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "parameters_key": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "description": "Key into sensitive runtime subscription_parameters."
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  },
+                                  "timeouts": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "create": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          },
+                                          "update": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          },
+                                          "delete": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "default": null
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "default": null
+                                  }
+                                },
+                                "additionalProperties": false,
+                                "not": {
+                                  "required": [
+                                    "parameters",
+                                    "parameters_key"
+                                  ],
+                                  "properties": {
+                                    "parameters": {
+                                      "type": "string"
+                                    },
+                                    "parameters_key": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "default": {}
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": {}
+                  },
+                  "entitlements": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "service_name": {
+                              "type": "string"
+                            },
+                            "plan_name": {
+                              "type": "string"
+                            },
+                            "amount": {
+                              "anyOf": [
+                                {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 2000000000
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "plan_unique_identifier": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "service_name",
+                            "plan_name"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": {}
+                  },
+                  "instances": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "parameters": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "description": "Non-secret JSON object; secrets use parameters_key."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "parameters_key": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "description": "Key into sensitive runtime instance_parameters, never a secret value."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "labels": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "additionalProperties": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "uniqueItems": true
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "shared": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "serviceplan_id": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "description": "Optional actual catalog ID; checked against the named catalog lookup."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "use_plan_names": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": false
+                            },
+                            "required_platform": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "description": "Required supported_platforms entry from the actual service plan."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "timeouts": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "create": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    },
+                                    "update": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    },
+                                    "delete": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "offering": {
+                              "type": "string"
+                            },
+                            "plan": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "name",
+                            "offering",
+                            "plan"
+                          ],
+                          "not": {
+                            "required": [
+                              "parameters",
+                              "parameters_key"
+                            ],
+                            "properties": {
+                              "parameters": {
+                                "type": "string"
+                              },
+                              "parameters_key": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": {}
+                  },
+                  "subscriptions": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "parameters": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "description": "Non-secret JSON object."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "parameters_key": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "description": "Key into sensitive runtime subscription_parameters."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "timeouts": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "create": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    },
+                                    "update": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    },
+                                    "delete": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "pattern": "^([0-9]+(\\.[0-9]+)?(ns|us|ms|s|m|h))+$"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ],
+                                      "default": null
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "default": null
+                            },
+                            "app_name": {
+                              "type": "string"
+                            },
+                            "plan_name": {
+                              "type": "string"
+                            }
+                          },
+                          "additionalProperties": false,
+                          "required": [
+                            "app_name",
+                            "plan_name"
+                          ],
+                          "not": {
+                            "required": [
+                              "parameters",
+                              "parameters_key"
+                            ],
+                            "properties": {
+                              "parameters": {
+                                "type": "string"
+                              },
+                              "parameters_key": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": {}
+                  },
+                  "catalog": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "uniqueItems": true
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": []
+                  },
+                  "catalog_amounts": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2000000000
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": {}
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": {}
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "costcenter"
+        ]
+      },
+      "propertyNames": {
+        "enum": [
+          "DEV",
+          "TEST",
+          "PROD"
+        ]
+      },
+      "required": [
+        "DEV"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "account_type",
+    "project_name",
+    "environments"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sap-btp-agentic-iac/landing-zone-v2",
+  "title": "SAP BTP Landing Zone v2",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "account_type": {
+            "const": "trial"
+          }
+        },
+        "required": [
+          "account_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "environments": {
+            "properties": {
+              "PROD": {
+                "required": [
+                  "enabled"
+                ],
+                "properties": {
+                  "enabled": {
+                    "const": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "environments": {
+          "patternProperties": {
+            "^(?!DEV$).+$": {
+              "properties": {
+                "cloud_foundry": {
+                  "properties": {
+                    "spaces": {
+                      "additionalProperties": {
+                        "properties": {
+                          "legacy_manager": {
+                            "type": "null"
+                          },
+                          "legacy_developer": {
+                            "type": "null"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "properties": {
+            "DEV": {
+              "properties": {
+                "cloud_foundry": {
+                  "properties": {
+                    "spaces": {
+                      "patternProperties": {
+                        "^(?!project$).+$": {
+                          "properties": {
+                            "legacy_manager": {
+                              "type": "null"
+                            },
+                            "legacy_developer": {
+                              "type": "null"
+                            }
+                          }
+                        }
+                      },
+                      "properties": {
+                        "project": {
+                          "properties": {
+                            "member_origin": {
+                              "type": "null"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

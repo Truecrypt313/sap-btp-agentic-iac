@@ -30,8 +30,8 @@ variable "subaccount_region" {
   # contains(LISTE, WERT) liefert true, wenn der Wert in der Liste steht.
   # Ist die Bedingung false, stoppt Terraform mit error_message.
   validation {
-    condition     = contains(["us10", "ap21"], var.subaccount_region)
-    error_message = "Region must be one of us10 or ap21"
+    condition     = can(regex("^[a-z][a-z0-9-]+$", var.subaccount_region))
+    error_message = "Region must be a region code; actual IaaS/runtime availability is checked via btp_regions."
   }
 }
 

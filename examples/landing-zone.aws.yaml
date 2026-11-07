@@ -1,0 +1,141 @@
+# yaml-language-server: $schema=../schemas/landing-zone.schema.json
+# EXAMPLE ONLY: new enterprise account/state. Actual account catalogs decide availability.
+account_type: enterprise
+environments:
+  DEV:
+    administrators: []
+    beta_enabled: true
+    cloud_foundry:
+      enabled: true
+      landscape_label: ''
+      plan: standard
+      spaces:
+        project:
+          developers: []
+          managers: []
+          name: dev-project-abc
+      name: null
+      environment_type: cloudfoundry
+      service_name: cloudfoundry
+      parameters: null
+      timeouts: null
+    costcenter: '12345'
+    enabled: true
+    region: us10
+    services:
+      alert_notification:
+        enabled: true
+        instance: true
+        plan: standard
+      feature_flags:
+        dashboard: true
+        enabled: true
+        instance: false
+        plan: lite
+      work_zone:
+        enabled: false
+        plan: standard
+    iaas_provider: AWS
+    runtime: cloudfoundry
+    name: null
+    subdomain: null
+    description: DEV example on AWS
+    parent_id: null
+    usage: NOT_USED_FOR_PRODUCTION
+    skip_auto_entitlement: null
+    role_assignments: {}
+  PROD:
+    administrators: []
+    beta_enabled: false
+    cloud_foundry:
+      enabled: true
+      landscape_label: ''
+      plan: standard
+      spaces:
+        app:
+          developers: []
+          managers: []
+          name: prod-project-abc
+      name: null
+      environment_type: cloudfoundry
+      service_name: cloudfoundry
+      parameters: null
+      timeouts: null
+    costcenter: '34567'
+    enabled: true
+    labels:
+      criticality:
+      - production
+    region: us10
+    services:
+      alert_notification:
+        enabled: true
+        instance: true
+        plan: standard
+      feature_flags:
+        dashboard: true
+        enabled: true
+        instance: true
+        plan: standard
+      work_zone:
+        enabled: false
+        plan: standard
+    iaas_provider: AWS
+    runtime: cloudfoundry
+    name: null
+    subdomain: null
+    description: PROD example on AWS
+    parent_id: null
+    usage: USED_FOR_PRODUCTION
+    skip_auto_entitlement: null
+    role_assignments: {}
+  TEST:
+    administrators: []
+    cloud_foundry:
+      enabled: true
+      landscape_label: ''
+      plan: standard
+      spaces:
+        app:
+          developers: []
+          managers: []
+          name: test-project-abc
+        integration:
+          developers: []
+          managers: []
+          name: test-integration
+      name: null
+      environment_type: cloudfoundry
+      service_name: cloudfoundry
+      parameters: null
+      timeouts: null
+    costcenter: '23456'
+    enabled: true
+    labels:
+      purpose:
+      - integration
+    region: us10
+    services:
+      alert_notification:
+        enabled: true
+        instance: true
+        plan: standard
+      feature_flags:
+        dashboard: true
+        enabled: true
+        instance: true
+        plan: lite
+      work_zone:
+        enabled: false
+        plan: standard
+    iaas_provider: AWS
+    runtime: cloudfoundry
+    name: null
+    subdomain: null
+    description: TEST example on AWS
+    parent_id: null
+    usage: NOT_USED_FOR_PRODUCTION
+    skip_auto_entitlement: null
+    role_assignments: {}
+project_name: Project ABC
+schema_version: 2

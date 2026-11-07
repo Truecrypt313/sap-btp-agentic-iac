@@ -8,38 +8,47 @@ variable "additional_subaccounts" {
     costcenter = string
   }))
 
-  # Zunächst keine zusätzlichen Ressourcen erstellen
+  # Deprecated migration input: YAML owns the desired subaccounts.
+  # A nonempty HCP override must match YAML in compatibility mode.
   default = {}
 
   validation {
     condition = alltrue([
       for stage, config in var.additional_subaccounts :
       contains(["TEST", "PROD"], stage) &&
-      contains(["us10", "ap21"], config.region) &&
+      can(regex("^[a-z][a-z0-9-]+$", config.region)) &&
       can(regex("^[0-9]{5}$", config.costcenter))
     ])
-    error_message = "Only TEST/PROD, supported regions and 5-digit cost centers are allowed."
+    error_message = "Only TEST/PROD, region codes and 5-digit cost centers are allowed; actual compatibility comes from btp_regions."
   }
 }
 
 resource "btp_subaccount" "additional" {
-  for_each = var.additional_subaccounts
+  for_each = local.additional_environments
 
-  name = "${each.key} ${var.project_name}"
+  name = coalesce(each.value.name, "${each.key} ${local.project_name}")
 
-  subdomain = lower(
+  subdomain = each.value.subdomain != null ? each.value.subdomain : lower(
     replace(
-      "${each.key}-${var.project_name}-${random_uuid.uuid.result}",
+      "${each.key}-${local.project_name}-${random_uuid.uuid.result}",
       " ",
       "-"
     )
   )
 
-  region       = each.value.region
-  beta_enabled = each.key != "PROD"
+  region                = module.region_catalog.regions[each.key]
+  description           = each.value.description
+  parent_id             = each.value.parent_id
+  usage                 = each.value.usage
+  skip_auto_entitlement = each.value.skip_auto_entitlement
+  beta_enabled          = each.value.beta_enabled
 
-  labels = {
+  labels = merge(each.value.labels, {
     stage      = [each.key]
     costcenter = [each.value.costcenter]
+  })
+
+  lifecycle {
+    prevent_destroy = true
   }
 }

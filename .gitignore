@@ -32,3 +32,7 @@ terraform.rc
 # Betriebssystem / IDE
 .DS_Store
 .vscode/.history/
+
+# Local Python validation artifacts
+__pycache__/
+*.py[cod]

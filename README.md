@@ -31,3 +31,8 @@ CI-Pipeline, HCP-Trigger-Vorschläge und Handoff-Übergangsvoraussetzung steht i
 [Audit-Korrekturen und PR-Prüfvertrag](docs/AUDIT_REMEDIATION.md).
 Für die vollständige lokale Testsuite ist zusätzlich der dort dokumentierte,
 gepinnte Gitleaks-Scanner erforderlich.
+
+Der separate BTP-Bootstrap wurde inzwischen angewendet und veröffentlicht den
+DEV-Handoff im BTP-State. Die Integration in die modulare Konfiguration und die
+weiterhin ausschließlich durch YAML gesteuerte TEST-Vorlage sind in
+[Bootstrap und Integration](docs/BTP_HANDOFF_BOOTSTRAP.md) beschrieben.

@@ -1,5 +1,10 @@
 # Audit-Korrekturen und PR-Prüfvertrag
 
+Aktualisierung nach dem separaten Bootstrap: Der DEV-Handoff ist inzwischen im
+BTP-State Serial 2 veröffentlicht. Die folgenden Audit-Ergebnisse beschreiben
+den Stand vor seiner Einführung. Den aktuellen Integrationsstand dokumentiert
+[Bootstrap und Integration](BTP_HANDOFF_BOOTSTRAP.md).
+
 Stand: 07.11.2026. Branch: `feature/modular-btp-landing-zone`.
 Keine HCP-Einstellungen, Variablen oder States wurden verändert. Kein Commit,
 Push, PR, HCP-Run, Apply oder Destroy wurde ausgeführt.

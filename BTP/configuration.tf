@@ -93,6 +93,7 @@ output "landing_zone_configuration_fingerprint" {
   value       = sha256(jsonencode(local.configuration))
 }
 
+# Preserve the published bootstrap DEV contract; add only YAML-enabled CF environments.
 output "cloud_foundry_environments" {
   description = "Output-only handoff to isolated CF workspaces. No credentials or whole-state sharing required."
   value = merge(

@@ -1,0 +1,74 @@
+# TEMPLATE ONLY: not read by the active configuration.
+# For a NEW enterprise global account/workspace, never as a trial migration shortcut.
+# Verify all region/service/plan entitlements in that actual account first.
+schema_version: 1
+account_type: enterprise
+project_name: Project ABC
+environments:
+  DEV:
+    enabled: true
+    region: us10
+    costcenter: "12345"
+    beta_enabled: true
+    administrators: []
+    cloud_foundry:
+      enabled: true
+      plan: standard
+      landscape_label: ""
+      spaces:
+        project:
+          name: dev-project-abc
+          managers: []
+          developers: []
+    services:
+      # DEV compatibility baseline remains enabled at its existing addresses.
+      alert_notification: { enabled: true, plan: standard, instance: true }
+      feature_flags: { enabled: true, plan: lite, instance: false, dashboard: true }
+      work_zone: { enabled: false, plan: standard }
+  TEST:
+    enabled: true
+    region: ap21
+    costcenter: "23456"
+    labels:
+      purpose: [integration]
+    administrators: []
+    cloud_foundry:
+      enabled: true
+      plan: standard
+      landscape_label: ""
+      spaces:
+        app:
+          name: test-project-abc
+          managers: []
+          developers: []
+        integration:
+          name: test-integration
+          managers: []
+          developers: []
+    services:
+      alert_notification: { enabled: true, plan: standard, instance: true }
+      feature_flags: { enabled: true, plan: lite, instance: true, dashboard: true }
+      # SAPLaunchpad APPLICATION plan, not a similarly named service-instance plan.
+      # Enable only after verifying entitlement, regional availability and IAS trust.
+      work_zone: { enabled: false, plan: standard }
+  PROD:
+    enabled: true
+    region: eu10
+    costcenter: "34567"
+    beta_enabled: false
+    labels:
+      criticality: [production]
+    administrators: []
+    cloud_foundry:
+      enabled: true
+      plan: standard
+      landscape_label: ""
+      spaces:
+        app:
+          name: prod-project-abc
+          managers: []
+          developers: []
+    services:
+      alert_notification: { enabled: true, plan: standard, instance: true }
+      feature_flags: { enabled: true, plan: standard, instance: true, dashboard: true }
+      work_zone: { enabled: false, plan: standard }

@@ -10,6 +10,10 @@
 # Die .terraform.lock.hcl hält die aufgelösten Provider-Prüfsummen fest.
 terraform {
   required_providers {
+    tfe = {
+      source  = "hashicorp/tfe"
+      version = "0.83.0"
+    }
     cloudfoundry = {
       source  = "cloudfoundry/cloudfoundry"
       version = "1.18.0"
@@ -25,3 +29,5 @@ terraform {
 provider "cloudfoundry" {
   api_url = var.cf_api_url
 }
+
+provider "tfe" {}

@@ -1,0 +1,14 @@
+{
+  "sap-btp-core": {
+    "working-directory": "BTP",
+    "file-triggers-enabled": true,
+    "trigger-prefixes": [],
+    "trigger-patterns": ["/BTP/**", "/schemas/**", "/scripts/**"]
+  },
+  "sap-cloudfoundry": {
+    "working-directory": "CloudFoundry",
+    "file-triggers-enabled": true,
+    "trigger-prefixes": [],
+    "trigger-patterns": ["/CloudFoundry/**", "/BTP/landing-zone.yaml", "/BTP/modules/landing-zone-config/**", "/schemas/**", "/scripts/**"]
+  }
+}

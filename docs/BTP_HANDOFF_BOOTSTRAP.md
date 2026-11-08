@@ -1,5 +1,40 @@
 # Isolierter DEV-Handoff-Bootstrap
 
+## Integration in die modulare Landing Zone
+
+Der Bootstrap aus `main` / `ebb1ab7` wurde separat angewendet. Lesend geprüft:
+BTP-State Serial 2 (`sv-7anyoe92t2HPpWLm`) veröffentlicht den nicht sensitiven
+DEV-Handoff mit dem unten dokumentierten Fingerabdruck. Endpoint und Org-ID
+stimmen mit den bisherigen DEV-Outputs überein. HCP `additional_subaccounts`
+bleibt `{}`; diese Integration verändert keine HCP-Variablen oder States.
+
+Die Integration in `feature/modular-btp-landing-zone` erhält einen einzigen
+`landing_zone_config`-Modulaufruf, eine Pfadvariable und einen
+`cloud_foundry_environments`-Output. DEV verwendet weiterhin dieselben
+Environment-Labels und denselben unveränderten Hash-Vertrag. Der modulare
+Output ergänzt nur weitere in YAML aktivierte CF-Umgebungen.
+
+Die Bootstrap-Regressionen bleiben in `BTP/tests/handoff_bootstrap.tftest.hcl`.
+Ihre negativen Tests prüfen jetzt die entsprechenden modularen Ressourcen-
+Preconditions. Zusätzlich sichern sie den unveränderten DEV-Handoff im
+Compatibility- und YAML-Modus. Im modularen Root ist bei leerem Legacy-Input
+weiterhin der aktivierte TEST-Subaccount aus `BTP/landing-zone.yaml` zu erwarten;
+TEST-CF bleibt deaktiviert. Der reine Output-only-Bootstrap war ein separater,
+bereits abgeschlossener Einführungsschritt.
+
+Die CF-Prüfung auf veröffentlichten Endpoint, Org-ID und Fingerabdruck bleibt
+unverändert aktiv. Ein erfolgreicher aktueller CF-Speculative-Plan muss den
+tatsächlichen Output-Lesezugang zusätzlich bestätigen. Kein Apply oder Merge
+nach `main` ist Teil dieser Integration.
+
+Die lokale Integrationsprüfung mit Terraform 1.15.5 besteht vollständig:
+99 Terraform-Testläufe einschließlich der acht erhaltenen/angepassten Bootstrap-
+Regressionen, 12 Validierungen und 34 Python-Tests. Formatierung, Adressvertrag,
+Schema-Reexport, Workflow-Lint sowie Datei-/Provider-Lock- und Secret-Prüfungen
+bleiben erfolgreich. Keine produktiven Provider werden in den Tests ausgeführt.
+
+## Historischer Bootstrap-Umfang und seine Prüfungen
+
 Branch: `feature/btp-handoff-bootstrap`, Basis `main` / `6462e56`.
 Die Veröffentlichung erfolgt als Draft-PR gegen `main`. Automatische HCP-PR-Plans
 werden nur geprüft; es erfolgt kein Merge oder Apply und keine HCP-Variablenänderung.

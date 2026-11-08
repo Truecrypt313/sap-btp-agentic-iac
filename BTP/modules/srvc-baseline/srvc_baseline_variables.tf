@@ -37,3 +37,16 @@ variable "project_stage" {
     error_message = "Stage must be one of DEV, TEST or PROD"
   }
 }
+
+variable "configuration" { type = any }
+variable "catalog_valid" { type = bool }
+variable "instance_parameters" {
+  type      = map(string)
+  sensitive = true
+  default   = {}
+}
+variable "subscription_parameters" {
+  type      = map(string)
+  sensitive = true
+  default   = {}
+}

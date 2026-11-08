@@ -1,0 +1,28 @@
+{
+  "provenance": "Read-only MCP inventory, 2026-11-07. Base addresses only; no user identities, IDs or state contents.",
+  "BTP/main.tf": [
+    "data.btp_globalaccount.current",
+    "btp_subaccount.project_subaccount",
+    "btp_subaccount_environment_instance.cloudfoundry",
+    "btp_subaccount_role_collection_assignment.emergency_administrators",
+    "random_uuid.uuid",
+    "terraform_data.cf_landscape_label",
+    "data.btp_subaccount_environments.all"
+  ],
+  "BTP/modules/srvc-baseline/srvc_baseline.tf": [
+    "module.srvc_baseline.data.btp_subaccount_service_plan.alert_notification_service_standard",
+    "module.srvc_baseline.btp_subaccount_entitlement.alert_notification_service_standard",
+    "module.srvc_baseline.btp_subaccount_entitlement.feature_flags_dashboard_app",
+    "module.srvc_baseline.btp_subaccount_entitlement.feature_flags_service_lite",
+    "module.srvc_baseline.btp_subaccount_service_instance.alert_notification_service_standard",
+    "module.srvc_baseline.btp_subaccount_subscription.feature_flags_dashboard_app"
+  ],
+  "CloudFoundry/main.tf": [
+    "cloudfoundry_space.project_space",
+    "cloudfoundry_space_role.space_developer",
+    "cloudfoundry_space_role.space_manager"
+  ],
+  "BTP/landing_zone.tf": [
+    "btp_subaccount.additional"
+  ]
+}

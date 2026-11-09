@@ -10,10 +10,11 @@ run "current_trial_configuration" {
       output.configuration.environments.TEST.enabled &&
       output.configuration.environments.TEST.cloud_foundry.enabled &&
       output.configuration.environments.TEST.cloud_foundry.plan == "trial" &&
-      length(output.configuration.environments.TEST.cloud_foundry.spaces) == 0 &&
+      toset(keys(output.configuration.environments.TEST.cloud_foundry.spaces)) == toset(["project"]) &&
+      output.configuration.environments.TEST.cloud_foundry.spaces.project.name == "test-space-project-abc" &&
       toset(keys(output.handoff_fingerprints)) == toset(["DEV", "TEST"])
     )
-    error_message = "The current rollout must publish DEV and TEST identities, with TEST trial Cloud Foundry enabled and no TEST spaces."
+    error_message = "The current rollout must publish DEV and TEST identities, with TEST trial Cloud Foundry and exactly the project space named test-space-project-abc."
   }
   assert {
     condition     = !output.configuration.environments.PROD.enabled && !output.configuration.environments.DEV.services.work_zone.enabled

@@ -70,14 +70,20 @@ run "preserve_legacy_dev_and_test_addresses" {
       length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.managers) == 0 &&
       length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.developers) == 0 &&
       toset(keys(module.environment["TEST"].service_instance_ids)) == toset(["alert_notification"]) &&
-      toset(keys(module.service_selection["TEST"].selection.entitlements)) == toset(["alert_notification"]) &&
+      toset(keys(module.service_selection["TEST"].selection.entitlements)) == toset(["alert_notification", "feature_flags", "feature_flags_dashboard"]) &&
       module.service_selection["TEST"].selection.entitlements.alert_notification.service_name == "alert-notification" &&
       module.service_selection["TEST"].selection.entitlements.alert_notification.plan_name == "standard" &&
+      module.service_selection["TEST"].selection.entitlements.feature_flags.service_name == "feature-flags" &&
+      module.service_selection["TEST"].selection.entitlements.feature_flags.plan_name == "lite" &&
+      module.service_selection["TEST"].selection.entitlements.feature_flags_dashboard.service_name == "feature-flags-dashboard" &&
+      module.service_selection["TEST"].selection.entitlements.feature_flags_dashboard.plan_name == "dashboard" &&
       toset(keys(module.service_selection["TEST"].selection.instances)) == toset(["alert_notification"]) &&
       module.service_selection["TEST"].selection.instances.alert_notification.name == "test-project-abc-alert-notification" &&
-      length(module.service_selection["TEST"].selection.subscriptions) == 0
+      toset(keys(module.service_selection["TEST"].selection.subscriptions)) == toset(["feature_flags_dashboard"]) &&
+      module.service_selection["TEST"].selection.subscriptions.feature_flags_dashboard.app_name == "feature-flags-dashboard" &&
+      module.service_selection["TEST"].selection.subscriptions.feature_flags_dashboard.plan_name == "dashboard"
     )
-    error_message = "TEST must retain its trial CF project space without roles and select exactly Alert Notification standard with one instance and no subscriptions."
+    error_message = "TEST must retain its CF project space and Alert Notification instance, adding only Feature Flags lite/dashboard entitlements and the dashboard subscription, without a Feature Flags instance."
   }
   assert {
     condition     = length(module.dev_optional_services.instance_ids) == 0

@@ -36,6 +36,23 @@ locals {
   entitlements  = var.selection.entitlements
   instances     = var.selection.instances
   subscriptions = var.selection.subscriptions
+
+  # Catalog aliases and custom instances need not share an entitlement key.
+  instance_entitlement_keys = {
+    for key, instance in local.instances : key => [
+      for entitlement_key, entitlement in local.entitlements : entitlement_key
+      if entitlement.service_name == instance.offering && entitlement.plan_name == instance.plan
+    ]
+  }
+  # A new matching assignment has an unknown ID, so only its lookup must wait.
+  # Keep this value reference indirect: a data-source depends_on (or direct
+  # resource reference) conservatively waits for every for_each instance.
+  service_plan_subaccount_ids = {
+    for key, instance in local.instances : key => alltrue([
+      for entitlement_key in local.instance_entitlement_keys[key] :
+      btp_subaccount_entitlement.this[entitlement_key].id != ""
+    ]) ? var.subaccount_id : null
+  }
 }
 
 resource "btp_subaccount_entitlement" "this" {
@@ -70,11 +87,10 @@ resource "btp_subaccount_entitlement" "this" {
 data "btp_subaccount_service_plan" "this" {
   for_each = local.instances
 
-  subaccount_id = var.subaccount_id
+  subaccount_id = local.service_plan_subaccount_ids[each.key]
   id            = each.value.serviceplan_id
   offering_name = each.value.serviceplan_id == null ? each.value.offering : null
   name          = each.value.serviceplan_id == null ? each.value.plan : null
-  depends_on    = [btp_subaccount_entitlement.this]
 }
 
 resource "btp_subaccount_service_instance" "this" {

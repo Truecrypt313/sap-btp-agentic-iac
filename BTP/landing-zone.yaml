@@ -113,6 +113,11 @@ environments:
         enabled: true
         plan: standard
         instance: true
+      feature_flags:
+        enabled: true
+        plan: lite
+        instance: false
+        dashboard: true
   PROD:
     # Trial is for personal evaluation, never a production deployment.
     enabled: false

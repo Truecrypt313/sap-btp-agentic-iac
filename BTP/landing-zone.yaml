@@ -108,7 +108,11 @@ environments:
       spaces:
         project:
           name: test-space-project-abc
-    services: {}
+    services:
+      alert_notification:
+        enabled: true
+        plan: standard
+        instance: true
   PROD:
     # Trial is for personal evaluation, never a production deployment.
     enabled: false

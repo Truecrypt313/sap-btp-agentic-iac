@@ -6,7 +6,9 @@ run "fixture" {
 run "accept_distinct_keys" {
   command = plan
   variables {
-    services              = merge(run.fixture.configuration.environments.TEST.services, {})
+    services = merge(run.fixture.configuration.environments.TEST.services, {
+      alert_notification = merge(run.fixture.configuration.environments.TEST.services.alert_notification, { enabled = false })
+    })
     catalog               = run.fixture.configuration.service_catalog
     name_prefix           = "test"
     existing_dev_baseline = false
@@ -14,6 +16,35 @@ run "accept_distinct_keys" {
   assert {
     condition     = length(output.selection.entitlements) == 0
     error_message = "Disabled services must remain empty."
+  }
+}
+run "test_alert_notification_standard" {
+  command = plan
+  variables {
+    services              = run.fixture.configuration.environments.TEST.services
+    catalog               = run.fixture.configuration.service_catalog
+    name_prefix           = "test-project-abc"
+    existing_dev_baseline = false
+  }
+  assert {
+    condition = (
+      toset(keys(output.selection.entitlements)) == toset(["alert_notification"]) &&
+      output.selection.entitlements.alert_notification.service_name == "alert-notification" &&
+      output.selection.entitlements.alert_notification.plan_name == "standard" &&
+      output.selection.entitlements.alert_notification.amount == null &&
+      output.selection.entitlements.alert_notification.plan_unique_identifier == null
+    )
+    error_message = "TEST must select exactly the standard Alert Notification entitlement without an invented numeric quota or plan identifier."
+  }
+  assert {
+    condition = (
+      toset(keys(output.selection.instances)) == toset(["alert_notification"]) &&
+      output.selection.instances.alert_notification.offering == "alert-notification" &&
+      output.selection.instances.alert_notification.plan == "standard" &&
+      output.selection.instances.alert_notification.name == "test-project-abc-alert-notification" &&
+      length(output.selection.subscriptions) == 0
+    )
+    error_message = "TEST must select exactly one standard Alert Notification instance and no subscriptions."
   }
 }
 run "reject_entitlement_catalog_collision" {

@@ -6,8 +6,14 @@ variables {
 run "current_trial_configuration" {
   command = plan
   assert {
-    condition     = output.configuration.environments.TEST.enabled && !output.configuration.environments.TEST.cloud_foundry.enabled
-    error_message = "The current TEST rollout must remain subaccount-only."
+    condition = (
+      output.configuration.environments.TEST.enabled &&
+      output.configuration.environments.TEST.cloud_foundry.enabled &&
+      output.configuration.environments.TEST.cloud_foundry.plan == "trial" &&
+      length(output.configuration.environments.TEST.cloud_foundry.spaces) == 0 &&
+      toset(keys(output.handoff_fingerprints)) == toset(["DEV", "TEST"])
+    )
+    error_message = "The current rollout must publish DEV and TEST identities, with TEST trial Cloud Foundry enabled and no TEST spaces."
   }
   assert {
     condition     = !output.configuration.environments.PROD.enabled && !output.configuration.environments.DEV.services.work_zone.enabled
@@ -249,5 +255,31 @@ run "reviewed_dev_handoff_contract" {
   assert {
     condition     = output.handoff_fingerprints.DEV == "444d0f16abd3373a17cdd4159c596f4ae06e585e60844cad15d4bf39bccbe879"
     error_message = "Review the cross-workspace protocol fixture whenever BTP-owned identity changes."
+  }
+}
+
+run "reviewed_test_handoff_contract" {
+  command = plan
+  assert {
+    condition     = output.handoff_fingerprints.TEST == "9d6c14dd0ff81edfcaa25e00dcaed301930770872bcbe88630cb0b2398d62ce0"
+    error_message = "Review the TEST identity fixture when its subaccount or Cloud Foundry identity changes; keep the separate DEV fixture unchanged."
+  }
+}
+
+run "test_identity_change_preserves_dev_handoff" {
+  command = plan
+  variables {
+    configuration = merge(run.current_trial_configuration.configuration, {
+      environments = merge(run.current_trial_configuration.configuration.environments, {
+        TEST = merge(run.current_trial_configuration.configuration.environments.TEST, { name = "Renamed TEST" })
+      })
+    })
+  }
+  assert {
+    condition = (
+      output.handoff_fingerprints.TEST != run.current_trial_configuration.handoff_fingerprints.TEST &&
+      output.handoff_fingerprints.DEV == run.current_trial_configuration.handoff_fingerprints.DEV
+    )
+    error_message = "A TEST identity change must invalidate only the TEST handoff, preserving the published DEV identity."
   }
 }

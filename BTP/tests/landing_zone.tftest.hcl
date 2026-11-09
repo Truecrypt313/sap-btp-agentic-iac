@@ -64,12 +64,16 @@ run "preserve_legacy_dev_and_test_addresses" {
       module.landing_zone_config.configuration.environments.TEST.iaas_provider == "AWS" &&
       module.landing_zone_config.configuration.environments.TEST.cloud_foundry.enabled &&
       module.landing_zone_config.configuration.environments.TEST.cloud_foundry.plan == "trial" &&
-      length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces) == 0 &&
+      toset(keys(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces)) == toset(["project"]) &&
+      module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.name == "test-space-project-abc" &&
+      length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.roles) == 0 &&
+      length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.managers) == 0 &&
+      length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.developers) == 0 &&
       length(module.environment["TEST"].service_instance_ids) == 0 &&
       length(module.service_selection["TEST"].selection.entitlements) == 0 &&
       length(module.service_selection["TEST"].selection.subscriptions) == 0
     )
-    error_message = "TEST must enable only trial Cloud Foundry in us10/AWS, without service entitlements, instances, subscriptions or spaces."
+    error_message = "TEST must use trial Cloud Foundry in us10/AWS with exactly test-space-project-abc and no space roles, service entitlements, instances or subscriptions."
   }
   assert {
     condition     = length(module.dev_optional_services.instance_ids) == 0

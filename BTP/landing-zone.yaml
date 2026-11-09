@@ -105,7 +105,9 @@ environments:
     cloud_foundry:
       enabled: true
       plan: trial
-      spaces: {}
+      spaces:
+        project:
+          name: test-space-project-abc
     services: {}
   PROD:
     # Trial is for personal evaluation, never a production deployment.

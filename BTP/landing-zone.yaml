@@ -101,9 +101,9 @@ environments:
     administrators: []
     administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
     role_assignments: {}
-    # Preserve the existing pending TEST plan: just a subaccount initially.
+    # Enable only the CF org; resolve its landscape from the TEST provider catalog.
     cloud_foundry:
-      enabled: false
+      enabled: true
       plan: trial
       spaces: {}
     services: {}

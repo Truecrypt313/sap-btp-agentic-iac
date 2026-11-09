@@ -26,6 +26,8 @@ ROOTS = [
     ("BTP/modules/service-plan-rules", True),
     ("BTP/modules/srvc-baseline", True),
     ("BTP/modules/role-assignments", True),
+    ("BTP/modules/role-collections", True),
+    ("BTP/modules/role-catalog-rules", True),
     ("CloudFoundry/modules/spaces", True),
 ]
 
@@ -71,7 +73,7 @@ def main():
                 # used by the intended remote TEST workspace.
                 env["TF_WORKSPACE"] = "sap-cloudfoundry-test"
             init = ["terraform", "init", "-backend=false", "-input=false", "-no-color"]
-            if relative in ["BTP/modules/environment-services", "BTP/modules/role-assignments", "BTP/modules/srvc-baseline", "CloudFoundry/modules/spaces"]:
+            if relative in ["BTP/modules/environment-services", "BTP/modules/role-assignments", "BTP/modules/role-collections", "BTP/modules/srvc-baseline", "CloudFoundry/modules/spaces"]:
                 provider = "sap/btp" if relative.startswith("BTP/") else "cloudfoundry/cloudfoundry"
                 parent = "BTP" if relative.startswith("BTP/") else "CloudFoundry"
                 lock = (ROOT / parent / ".terraform.lock.hcl").read_text()

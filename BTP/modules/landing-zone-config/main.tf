@@ -62,12 +62,22 @@ variable "configuration" {
         origin               = optional(string)
       }), {})
       role_assignments = optional(map(object({
-        role_collection_name = string
+        role_collection_name = optional(string)
+        role_collection_key  = optional(string)
         user_name            = optional(string)
         group_name           = optional(string)
         attribute_name       = optional(string)
         attribute_value      = optional(string)
         origin               = optional(string)
+      })), {})
+      role_collections = optional(map(object({
+        name        = string
+        description = optional(string)
+        roles = map(object({
+          name                 = string
+          role_template_name   = string
+          role_template_app_id = string
+        }))
       })), {})
       cloud_foundry = optional(object({
         enabled          = optional(bool, false)
@@ -286,13 +296,29 @@ variable "configuration" {
   validation {
     condition = alltrue(flatten([
       for env in values(var.configuration.environments) : [for role in values(env.role_assignments) :
+        (role.role_collection_name != null) != (role.role_collection_key != null) &&
+        (role.role_collection_key == null ? true : contains(keys(env.role_collections), role.role_collection_key) && role.origin != null) &&
+        !contains([for collection in values(env.role_collections) : collection.name], role.role_collection_name == null ? "" : role.role_collection_name) &&
         length(compact([role.user_name, role.group_name, role.attribute_name])) == 1 &&
         (role.group_name == null || role.origin != null) &&
         (role.attribute_name == null || (role.attribute_value != null && role.origin != null)) &&
         (role.attribute_value == null || role.attribute_name != null)
       ]
     ]))
-    error_message = "BTP roles need exactly one user/group/attribute subject. Group and attribute mappings require origin; attribute_name/value must be paired."
+    error_message = "BTP assignments need one external collection name or a managed key with explicit origin, and exactly one user/group/attribute subject. Group and attribute mappings require origin; attribute_name/value must be paired."
+  }
+  validation {
+    condition = alltrue([for env in values(var.configuration.environments) :
+      length(distinct([for collection in values(env.role_collections) : collection.name])) == length(env.role_collections) &&
+      alltrue([for collection in values(env.role_collections) :
+        trimspace(collection.name) != "" &&
+        length(distinct([for role in values(collection.roles) : jsonencode(role)])) == length(collection.roles) &&
+        alltrue([for role in values(collection.roles) : alltrue([
+          for value in [role.name, role.role_template_name, role.role_template_app_id] : trimspace(value) != ""
+        ])])
+      ])
+    ])
+    error_message = "Role collection names must be unique and nonblank per environment; roles must be unique and fully identified."
   }
   validation {
     condition = alltrue(flatten([
@@ -353,13 +379,19 @@ variable "configuration" {
         (alltrue([for item3 in item1.administrators : (item3 != null && (true))])) &&
         ((length(item1.administrator_options.role_collection_name) >= 1) &&
         (item1.administrator_options.origin == null ? true : (length(item1.administrator_options.origin) >= 1))) &&
-        (alltrue([for item3 in values(item1.role_assignments) : (item3 != null && ((item3 == null ? true : ((length(item3.role_collection_name) >= 1) &&
+        (alltrue([for item3 in values(item1.role_assignments) : (item3 != null && ((item3 == null ? true : ((item3.role_collection_name == null ? true : (length(item3.role_collection_name) >= 1)) &&
+          (item3.role_collection_key == null ? true : (length(item3.role_collection_key) >= 1)) &&
           (item3.user_name == null ? true : (length(item3.user_name) >= 1 &&
           length(item3.user_name) <= 256)) &&
           (item3.group_name == null ? true : (length(item3.group_name) >= 1)) &&
           (item3.attribute_name == null ? true : (length(item3.attribute_name) >= 1)) &&
           (item3.attribute_value == null ? true : (length(item3.attribute_value) >= 1)) &&
         (item3.origin == null ? true : (length(item3.origin) >= 1))))))])) &&
+        (alltrue([for item3 in values(item1.role_collections) : (item3 != null && ((item3 == null ? true : ((length(item3.name) >= 1) &&
+          (length(item3.roles) >= 1 &&
+            alltrue([for item5 in values(item3.roles) : (item5 != null && ((item5 == null ? true : ((length(item5.name) >= 1) &&
+              (length(item5.role_template_name) >= 1) &&
+        (length(item5.role_template_app_id) >= 1)))))]))))))])) &&
         (!(item1.cloud_foundry.parameters != null && item1.cloud_foundry.parameters_key != null) &&
           (item1.cloud_foundry.parameters == null ? true : (can(keys(jsondecode(item1.cloud_foundry.parameters))) &&
           alltrue([for key in try(regexall("\"([^\"\\\\]+)\"\\s*:", jsonencode(jsondecode(item1.cloud_foundry.parameters))), []) : !can(regex("(?i)(password|passwd|secret|token|credentials|apikey|privatekey)$", replace(key[0], "/[^a-zA-Z0-9]/", "")))]))) &&
@@ -483,10 +515,12 @@ variable "raw_configuration" {
         (try(try(raw1.instance, null).timeouts, null) == null ? true : (length(setsubtract(toset(keys(try(try(raw1.instance, null).timeouts, null))), toset(["create", "update", "delete"]))) == 0)))) &&
         (try(raw1.subscription, null) == null ? true : (length(setsubtract(toset(keys(try(raw1.subscription, null))), toset(["parameters", "parameters_key", "timeouts", "app_name"]))) == 0 &&
       (try(try(raw1.subscription, null).timeouts, null) == null ? true : (length(setsubtract(toset(keys(try(try(raw1.subscription, null).timeouts, null))), toset(["create", "update", "delete"]))) == 0))))))]))) &&
-      (try(var.raw_configuration.environments, null) == null ? true : (alltrue([for raw1 in values(try(var.raw_configuration.environments, null)) : (raw1 == null ? true : (length(setsubtract(toset(keys(raw1)), toset(["enabled", "name", "subdomain", "description", "region", "iaas_provider", "runtime", "parent_id", "usage", "costcenter", "beta_enabled", "skip_auto_entitlement", "labels", "administrators_source", "administrators", "administrator_options", "role_assignments", "cloud_foundry", "services"]))) == 0 &&
+      (try(var.raw_configuration.environments, null) == null ? true : (alltrue([for raw1 in values(try(var.raw_configuration.environments, null)) : (raw1 == null ? true : (length(setsubtract(toset(keys(raw1)), toset(["enabled", "name", "subdomain", "description", "region", "iaas_provider", "runtime", "parent_id", "usage", "costcenter", "beta_enabled", "skip_auto_entitlement", "labels", "administrators_source", "administrators", "administrator_options", "role_assignments", "role_collections", "cloud_foundry", "services"]))) == 0 &&
         true &&
         (try(raw1.administrator_options, null) == null ? true : (length(setsubtract(toset(keys(try(raw1.administrator_options, null))), toset(["role_collection_name", "origin"]))) == 0)) &&
-        (try(raw1.role_assignments, null) == null ? true : (alltrue([for raw3 in values(try(raw1.role_assignments, null)) : (raw3 == null ? true : (length(setsubtract(toset(keys(raw3)), toset(["role_collection_name", "user_name", "group_name", "attribute_name", "attribute_value", "origin"]))) == 0))]))) &&
+        (try(raw1.role_assignments, null) == null ? true : (alltrue([for raw3 in values(try(raw1.role_assignments, null)) : (raw3 == null ? true : (length(setsubtract(toset(keys(raw3)), toset(["role_collection_name", "role_collection_key", "user_name", "group_name", "attribute_name", "attribute_value", "origin"]))) == 0))]))) &&
+        (try(raw1.role_collections, null) == null ? true : (alltrue([for raw3 in values(try(raw1.role_collections, null)) : (raw3 == null ? true : (length(setsubtract(toset(keys(raw3)), toset(["name", "description", "roles"]))) == 0 &&
+        (try(raw3.roles, null) == null ? true : (alltrue([for raw5 in values(try(raw3.roles, null)) : (raw5 == null ? true : (length(setsubtract(toset(keys(raw5)), toset(["name", "role_template_name", "role_template_app_id"]))) == 0))])))))]))) &&
         (try(raw1.cloud_foundry, null) == null ? true : (length(setsubtract(toset(keys(try(raw1.cloud_foundry, null))), toset(["enabled", "name", "plan", "environment_type", "service_name", "landscape_label", "parameters", "parameters_key", "timeouts", "spaces"]))) == 0 &&
           (try(try(raw1.cloud_foundry, null).timeouts, null) == null ? true : (length(setsubtract(toset(keys(try(try(raw1.cloud_foundry, null).timeouts, null))), toset(["create", "update", "delete"]))) == 0)) &&
           (try(try(raw1.cloud_foundry, null).spaces, null) == null ? true : (alltrue([for raw4 in values(try(try(raw1.cloud_foundry, null).spaces, null)) : (raw4 == null ? true : (length(setsubtract(toset(keys(raw4)), toset(["name", "allow_ssh", "isolation_segment", "labels", "annotations", "managers", "developers", "member_origin", "roles", "legacy_manager", "legacy_developer"]))) == 0 &&

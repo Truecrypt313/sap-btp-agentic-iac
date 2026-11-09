@@ -153,10 +153,17 @@ module "service_catalog" {
   entitlements     = { for stage, selection in module.service_selection : stage => stage == "DEV" ? module.dev_full_selection.selection.entitlements : selection.selection.entitlements }
 }
 
+module "dev_role_collections" {
+  source           = "./modules/role-collections"
+  subaccount_id    = btp_subaccount.project_subaccount.id
+  role_collections = local.dev.role_collections
+}
+
 module "dev_role_assignments" {
-  source        = "./modules/role-assignments"
-  subaccount_id = btp_subaccount.project_subaccount.id
-  assignments   = local.dev.role_assignments
+  source              = "./modules/role-assignments"
+  subaccount_id       = btp_subaccount.project_subaccount.id
+  assignments         = local.dev.role_assignments
+  managed_collections = module.dev_role_collections.collection_names
   reserved_assignments = [for user in local.dev_administrators : {
     role_collection_name = local.dev.administrator_options.role_collection_name
     user_name            = user

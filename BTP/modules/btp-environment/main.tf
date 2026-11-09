@@ -69,10 +69,17 @@ resource "btp_subaccount_role_collection_assignment" "administrators" {
   user_name            = each.value
 }
 
+module "role_collections" {
+  source           = "../role-collections"
+  subaccount_id    = var.subaccount_id
+  role_collections = var.configuration.role_collections
+}
+
 module "role_assignments" {
-  source        = "../role-assignments"
-  subaccount_id = var.subaccount_id
-  assignments   = var.configuration.role_assignments
+  source              = "../role-assignments"
+  subaccount_id       = var.subaccount_id
+  assignments         = var.configuration.role_assignments
+  managed_collections = module.role_collections.collection_names
   reserved_assignments = [for user in var.configuration.administrators : {
     role_collection_name = var.configuration.administrator_options.role_collection_name
     user_name            = user
@@ -86,4 +93,8 @@ output "cloud_foundry" {
 
 output "service_instance_ids" {
   value = module.services.instance_ids
+}
+
+output "role_collection_names" {
+  value = module.role_collections.collection_names
 }

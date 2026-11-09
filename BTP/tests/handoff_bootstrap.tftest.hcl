@@ -139,3 +139,8 @@ run "reject_noncanonical_yaml_path" {
   variables { landing_zone_config_file = "./landing-zone.yaml" }
   expect_failures = [var.landing_zone_config_file]
 }
+
+override_module {
+  target  = module.environment["TEST"].module.role_collections.module.catalog_validation
+  outputs = { valid = { feature_flags_administrator = true, feature_flags_auditor = true } }
+}

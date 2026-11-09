@@ -95,6 +95,23 @@
       "type"
     ]
   },
+  "btp_subaccount_role_collection": {
+    "writable": [
+      "description",
+      "name",
+      "roles",
+      "subaccount_id"
+    ],
+    "covered": [
+      "description",
+      "name",
+      "roles",
+      "subaccount_id"
+    ],
+    "readonly": [
+      "id"
+    ]
+  },
   "btp_subaccount_role_collection_assignment": {
     "writable": [
       "attribute_name",

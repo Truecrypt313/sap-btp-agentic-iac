@@ -58,9 +58,15 @@ MAPPING = {
         "parameters": "Subscription-Optionen.parameters oder parameters_key",
         "timeouts": "Subscription-Optionen.timeouts",
     },
+    "btp_subaccount_role_collection": {
+        "subaccount_id": "abgeleitete Umgebungs-ID",
+        "name": "role_collections.*.name",
+        "description": "role_collections.*.description",
+        "roles": "role_collections.*.roles.*",
+    },
     "btp_subaccount_role_collection_assignment": {
         "subaccount_id": "abgeleitete Umgebungs-ID",
-        "role_collection_name": "administrator_options.role_collection_name / role_assignments.*.role_collection_name",
+        "role_collection_name": "administrator_options.role_collection_name / role_assignments.*.role_collection_name / role_collection_key als Ressourcenreferenz",
         "user_name": "administrators / bestehender DEV-HCP-Input / role_assignments.*.user_name",
         "group_name": "role_assignments.*.group_name",
         "attribute_name": "role_assignments.*.attribute_name",
@@ -109,11 +115,15 @@ RULES = {
     },
     "btp_subaccount_role_collection_assignment": {
         "user_name": "Genau eines von user_name/group_name/attribute_name; 1–256 Zeichen.",
-        "group_name": "Benötigt origin; bestehende Role Collection wird gelesen.",
+        "group_name": "Benötigt origin; externe Collection wird gelesen, verwaltete Collection per Schlüssel referenziert.",
         "attribute_name": "Benötigt attribute_value und origin.",
         "attribute_value": "Benötigt attribute_name.",
         "origin": "Providerdefault ldap; null erhält Legacy-Verhalten. Custom-IdP nur ausdrücklich wählen.",
-        "role_collection_name": "Nicht leer; muss bereits existieren. Das Template erstellt keine Role Collection.",
+        "role_collection_name": "Externer Name oder role_collection_key einer verwalteten Collection; genau eine Quelle. Neue verwaltete Bindungen benötigen expliziten origin.",
+    },
+    "btp_subaccount_role_collection": {
+        "name": "Eindeutig je Subaccount; stabile YAML-Schlüssel. Vorhandene Collections nicht doppelt anlegen.",
+        "roles": "Mindestens eine Rolle; jedes Tripel muss im SAP-Katalog eindeutig existieren und erforderliche Attribute müssen belegt sein.",
     },
     "cloudfoundry_space": {
         "org": "UUID; aus dem zugehörigen Workspace-/BTP-Handoff, keine freie YAML-Umleitung.",
@@ -130,6 +140,7 @@ RULES = {
     },
 }
 REPLACE = {
+    "btp_subaccount_role_collection": {"subaccount_id", "name"},
     "btp_subaccount": {"region", "subdomain", "parent_id", "skip_auto_entitlement"},
     "btp_subaccount_entitlement": {"subaccount_id", "service_name", "plan_name"},
     "btp_subaccount_environment_instance": {"subaccount_id", "name", "environment_type", "service_name", "landscape_label"},
@@ -141,7 +152,7 @@ REPLACE = {
 }
 DATA = {"btp_regions","btp_globalaccount","btp_globalaccount_entitlements_with_data_centers","btp_directory_entitlements",
         "btp_subaccount_entitlements","btp_subaccount_service_plan","btp_subaccount_subscriptions",
-        "btp_subaccount_environments","btp_subaccount_role_collection"}
+        "btp_subaccount_environments","btp_subaccount_role_collection","btp_subaccount_roles"}
 
 
 def capture():
@@ -222,7 +233,8 @@ def render(snapshot):
                     rule += " Objekt mit create/update/delete, je optionaler Go-Duration-String; Template erlaubt positive Einheiten ns/us/ms/s/m/h."
                 lines.append("| "+" | ".join(map(cell,[key,data_type,status,MAPPING[name].get(key,"Provider-Ausgabe"),rule]))+" |")
                 for nested, field in attr.get("nested_type",{}).get("attributes",{}).items():
-                    lines.append("| "+" | ".join(map(cell,[key+"."+nested,json.dumps(field.get("type")),"Optional",MAPPING[name].get(key,"")+"."+nested,"Zeitlimit; zu kleine Werte können Timeouts verursachen, ändern keine State-Adresse."]))+" |")
+                    rule = "Zeitlimit; zu kleine Werte können Timeouts verursachen, ändern keine State-Adresse." if key == "timeouts" else "Teil der exakten Rollenidentität; gegen den SAP-Rollenkatalog geprüft."
+                    lines.append("| "+" | ".join(map(cell,[key+"."+nested,json.dumps(field.get("type")),"Pflicht" if field.get("required") else "Optional",MAPPING[name].get(key,"")+"."+nested,rule]))+" |")
             lines += [""]
     lines += ["## Jedes YAML-Attribut", "",
               "Die Tabelle beschreibt auch Template-Felder, die keine Provider-Argumente sind.",
@@ -253,11 +265,12 @@ def render(snapshot):
             lines.append("| "+" | ".join(map(cell,[path,hcl_type(node),"ja" if node["required"] else "nein",json.dumps(node["default"]),node.get("description","")+"; ".join(rules)]))+" |")
     walk(CONFIGURATION,"")
     lines += ["", "## Grenzen der Abdeckung", "",
-        "- Alle beschreibbaren Attribute der acht implementierten Ressourcentypen sind direkt oder abgeleitet verbunden.",
+        "- Alle beschreibbaren Attribute der neun implementierten Ressourcentypen sind direkt oder abgeleitet verbunden.",
         "- Berechnete Felder wie CF-Environment-custom_labels, Space.quota, IDs, Zeitstempel und Status sind keine YAML-Eingaben.",
         "- Eine CF-Space-Quota braucht eine eigene Ressource; hier wird keine Schreibfähigkeit erfunden.",
         "- Broker-Parameterschemas werden nicht vollständig lokal ausgeführt. Die API prüft dienstspezifische Semantik.",
-        "- Role Collections, Org-Mitgliedschaften, Isolation-Segment-Entitlements, Service-Bindings und Apps werden nicht erstellt.",
+        "- Role Collections werden explizit über YAML verwaltet; Zuweisungen sind davon getrennt und standardmäßig leer.",
+        "- Org-Mitgliedschaften, Isolation-Segment-Entitlements, Service-Bindings und Apps werden nicht erstellt.",
         "- Diese Momentaufnahme ist kein Live-Verfügbarkeits- oder Quotenbeweis. Neue Subaccount-Kataloge sind erst nach deren Existenz lesbar.",
         "- Alle Schema-Beschreibungen stammen aus den jeweiligen SAP-/Cloud-Foundry-Providern (Apache-2.0); Quellen siehe oben.",
         ""]

@@ -46,6 +46,18 @@ run "preserve_legacy_dev_and_test_addresses" {
   command = plan
   assert {
     condition = (
+      tomap(module.environment["TEST"].role_collection_names) == tomap({
+        feature_flags_administrator = "TEST_FeatureFlags_Administrator"
+        feature_flags_auditor       = "TEST_FeatureFlags_Auditor"
+      }) &&
+      length(module.dev_role_collections.collection_names) == 0 &&
+      length(module.landing_zone_config.configuration.environments.TEST.role_assignments) == 0 &&
+      length(module.landing_zone_config.configuration.environments.TEST.administrators) == 0
+    )
+    error_message = "Only TEST receives two managed collections; no new users or assignments and no DEV collections."
+  }
+  assert {
+    condition = (
       btp_subaccount.project_subaccount.name == "DEV Project ABC" &&
       btp_subaccount.project_subaccount.region == "us10" &&
       btp_subaccount.project_subaccount.subdomain == "dev-project-abc-11111111-1111-4111-8111-111111111111" &&
@@ -160,4 +172,9 @@ run "reject_noncanonical_configuration_path" {
   command = plan
   variables { landing_zone_config_file = "../examples/landing-zone.enterprise.yaml" }
   expect_failures = [var.landing_zone_config_file]
+}
+
+override_module {
+  target  = module.environment["TEST"].module.role_collections.module.catalog_validation
+  outputs = { valid = { feature_flags_administrator = true, feature_flags_auditor = true } }
 }

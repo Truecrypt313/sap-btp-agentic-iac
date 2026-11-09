@@ -29,8 +29,9 @@ def constraints(node, expression, depth=0):
     for key, op in [("minLength", ">="), ("maxLength", "<=")]:
         if key in node:
             checks.append(f"length({expression}) {op} {node[key]}")
-    if "maxProperties" in node:
-        checks.append(f"length({expression}) <= {node['maxProperties']}")
+    for key, op in [("minProperties", ">="), ("maxProperties", "<=")]:
+        if key in node:
+            checks.append(f"length({expression}) {op} {node[key]}")
     for key, op in [("minimum", ">="), ("maximum", "<=")]:
         if key in node:
             checks.append(f"{expression} {op} {node[key]}")

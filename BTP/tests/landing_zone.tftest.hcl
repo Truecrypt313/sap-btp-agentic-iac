@@ -69,11 +69,15 @@ run "preserve_legacy_dev_and_test_addresses" {
       length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.roles) == 0 &&
       length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.managers) == 0 &&
       length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces.project.developers) == 0 &&
-      length(module.environment["TEST"].service_instance_ids) == 0 &&
-      length(module.service_selection["TEST"].selection.entitlements) == 0 &&
+      toset(keys(module.environment["TEST"].service_instance_ids)) == toset(["alert_notification"]) &&
+      toset(keys(module.service_selection["TEST"].selection.entitlements)) == toset(["alert_notification"]) &&
+      module.service_selection["TEST"].selection.entitlements.alert_notification.service_name == "alert-notification" &&
+      module.service_selection["TEST"].selection.entitlements.alert_notification.plan_name == "standard" &&
+      toset(keys(module.service_selection["TEST"].selection.instances)) == toset(["alert_notification"]) &&
+      module.service_selection["TEST"].selection.instances.alert_notification.name == "test-project-abc-alert-notification" &&
       length(module.service_selection["TEST"].selection.subscriptions) == 0
     )
-    error_message = "TEST must use trial Cloud Foundry in us10/AWS with exactly test-space-project-abc and no space roles, service entitlements, instances or subscriptions."
+    error_message = "TEST must retain its trial CF project space without roles and select exactly Alert Notification standard with one instance and no subscriptions."
   }
   assert {
     condition     = length(module.dev_optional_services.instance_ids) == 0

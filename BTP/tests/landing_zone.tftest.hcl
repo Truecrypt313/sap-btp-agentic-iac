@@ -16,7 +16,7 @@ mock_provider "btp" {
     defaults = { values = { app_name = "feature-flags-dashboard", plan_name = "dashboard" } }
   }
   mock_data "btp_subaccount_environments" {
-    defaults = { values = { service_name = "cloudfoundry", environment_type = "cloudfoundry", plan_name = "standard", landscape_label = "cf-us10-001" } }
+    defaults = { values = { service_name = "cloudfoundry", environment_type = "cloudfoundry", plan_name = "trial", landscape_label = "cf-us10-001" } }
   }
   mock_resource "btp_subaccount_environment_instance" {
     defaults = { labels = "{\"API Endpoint\":\"https://api.example.invalid\",\"Org ID\":\"mock-org\"}" }
@@ -52,11 +52,24 @@ run "preserve_legacy_dev_and_test_addresses" {
       btp_subaccount.additional["TEST"].name == "TEST Project ABC" &&
       length(btp_subaccount.additional) == 1
     )
-    error_message = "The DEV resource and pending TEST address/naming must remain stable."
+    error_message = "The existing DEV and TEST resource addresses and naming must remain stable."
   }
   assert {
-    condition     = length(output.cloud_foundry_environments) == 1 && contains(keys(output.cloud_foundry_environments), "DEV")
-    error_message = "No extra CF environments may be enabled by the migration defaults."
+    condition     = toset(keys(output.cloud_foundry_environments)) == toset(["DEV", "TEST"])
+    error_message = "Publish exactly DEV and TEST Cloud Foundry handoffs; PROD must remain absent."
+  }
+  assert {
+    condition = (
+      module.landing_zone_config.configuration.environments.TEST.region == "us10" &&
+      module.landing_zone_config.configuration.environments.TEST.iaas_provider == "AWS" &&
+      module.landing_zone_config.configuration.environments.TEST.cloud_foundry.enabled &&
+      module.landing_zone_config.configuration.environments.TEST.cloud_foundry.plan == "trial" &&
+      length(module.landing_zone_config.configuration.environments.TEST.cloud_foundry.spaces) == 0 &&
+      length(module.environment["TEST"].service_instance_ids) == 0 &&
+      length(module.service_selection["TEST"].selection.entitlements) == 0 &&
+      length(module.service_selection["TEST"].selection.subscriptions) == 0
+    )
+    error_message = "TEST must enable only trial Cloud Foundry in us10/AWS, without service entitlements, instances, subscriptions or spaces."
   }
   assert {
     condition     = length(module.dev_optional_services.instance_ids) == 0

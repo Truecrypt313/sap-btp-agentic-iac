@@ -29,6 +29,11 @@ override_resource {
   override_during = plan
   values          = { output = "cf-us10-001" }
 }
+override_resource {
+  target          = module.environment["TEST"].module.cloud_foundry["primary"].btp_subaccount_environment_instance.this
+  override_during = plan
+  values          = { labels = "{\"API Endpoint\":\"https://api.test.example.invalid\",\"Org ID\":\"33333333-3333-4333-8333-333333333333\"}" }
+}
 override_module {
   target  = module.region_catalog
   outputs = { regions = { DEV = "us10", TEST = "us10", PROD = "eu10" } }
@@ -53,21 +58,26 @@ run "dev_handoff_matches_pr2" {
         org_id               = "22222222-2222-4222-8222-222222222222"
         contract_fingerprint = "444d0f16abd3373a17cdd4159c596f4ae06e585e60844cad15d4bf39bccbe879"
       }
+      TEST = {
+        api_url              = "https://api.test.example.invalid"
+        org_id               = "33333333-3333-4333-8333-333333333333"
+        contract_fingerprint = "9d6c14dd0ff81edfcaa25e00dcaed301930770872bcbe88630cb0b2398d62ce0"
+      }
     }
-    error_message = "Publish exactly the endpoint, org and computed identity fingerprint expected by PR #2."
+    error_message = "Preserve the published DEV contract and publish the distinct TEST endpoint, org and reviewed identity fingerprint."
   }
   assert {
     condition = (
       length(btp_subaccount.additional) == 1 &&
       contains(keys(btp_subaccount.additional), "TEST") &&
       module.landing_zone_config.configuration.environments.TEST.enabled &&
-      !module.landing_zone_config.configuration.environments.TEST.cloud_foundry.enabled &&
+      module.landing_zone_config.configuration.environments.TEST.cloud_foundry.enabled &&
       btp_subaccount.project_subaccount.name == "DEV Project ABC" &&
       btp_subaccount.project_subaccount.subdomain == "dev-project-abc-11111111-1111-4111-8111-111111111111" &&
       btp_subaccount_environment_instance.cloudfoundry.plan_name == "trial" &&
       length(btp_subaccount_role_collection_assignment.emergency_administrators) == 1
     )
-    error_message = "Preserve the published DEV handoff; only the YAML-defined TEST subaccount may be planned despite an empty legacy input."
+    error_message = "Preserve the DEV resources and the YAML-owned TEST subaccount with Cloud Foundry enabled despite an empty legacy input."
   }
 }
 

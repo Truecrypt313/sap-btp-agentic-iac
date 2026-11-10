@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "test-neu": {
+      "account_profile": "trial",
+      "cf_environments": [
+        "DEV",
+        "TEST"
+      ],
+      "environments": [
+        "DEV",
+        "TEST"
+      ]
+    }
+  },
+  "schema_version": 1
+}

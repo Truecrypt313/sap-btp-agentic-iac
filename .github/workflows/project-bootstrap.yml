@@ -1,0 +1,131 @@
+name: Project bootstrap orchestration
+
+on:
+  push:
+    branches: [main]
+    paths: ['BTP/config/projects/**', 'BTP/config/account-profiles.yaml', 'HCP/**', 'scripts/*bootstrap*.py', '.github/workflows/project-bootstrap.yml']
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'Separate approval scope'
+        type: choice
+        options: [bootstrap, core, cf]
+        required: true
+      project_id:
+        description: 'Registered project; empty for bootstrap'
+        required: false
+      environment:
+        description: 'CF stage only; empty for bootstrap/core'
+        required: false
+      run_id:
+        description: 'Exact reviewed run-ID'
+        required: true
+      commit:
+        description: 'Exact reviewed main commit (40 hex characters)'
+        required: true
+      approval:
+        description: 'apply:<workspace>:<run-ID>:<commit>'
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: project-bootstrap-orchestration
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements.txt
+      - run: python scripts/project_bootstrap.py check
+  plan-bootstrap:
+    if: github.event_name == 'push' && vars.PROJECT_BOOTSTRAP_ENABLED == 'true'
+    needs: validate
+    runs-on: ubuntu-24.04
+    environment: hcp-bootstrap-plan
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements.txt
+      - name: Queue bootstrap plan, never auto-apply
+        env:
+          HCP_ORCHESTRATION_TOKEN: ${{ secrets.HCP_ORCHESTRATION_TOKEN }}
+        run: python scripts/bootstrap_runs.py plan --phase bootstrap --commit "$GITHUB_SHA" --allow-apply
+  approve:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && vars.PROJECT_BOOTSTRAP_ENABLED == 'true'
+    needs: validate
+    runs-on: ubuntu-24.04
+    environment: hcp-${{ inputs.phase }}-apply
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements.txt
+      - name: Explicitly approve exact run, then require a no-change drift plan
+        env:
+          HCP_ORCHESTRATION_TOKEN: ${{ secrets.HCP_ORCHESTRATION_TOKEN }}
+          PHASE: ${{ inputs.phase }}
+          PROJECT_ID: ${{ inputs.project_id }}
+          STAGE: ${{ inputs.environment }}
+          RUN_ID: ${{ inputs.run_id }}
+          COMMIT_SHA: ${{ inputs.commit }}
+          APPROVAL: ${{ inputs.approval }}
+        shell: bash
+        run: |
+          args=(approve --phase "$PHASE" --run-id "$RUN_ID" --commit "$COMMIT_SHA" --approval "$APPROVAL")
+          if [[ -n "$PROJECT_ID" ]]; then args+=(--project-id "$PROJECT_ID"); fi
+          if [[ -n "$STAGE" ]]; then args+=(--environment "$STAGE"); fi
+          python scripts/bootstrap_runs.py "${args[@]}"
+  project-plans:
+    if: github.event_name == 'workflow_dispatch' && inputs.phase == 'bootstrap' && github.ref == 'refs/heads/main' && vars.PROJECT_BOOTSTRAP_ENABLED == 'true'
+    needs: approve
+    runs-on: ubuntu-24.04
+    environment: hcp-project-plan
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r scripts/requirements.txt
+      - name: After bootstrap, queue project core plans using only the plan token
+        env:
+          HCP_ORCHESTRATION_TOKEN: ${{ secrets.HCP_ORCHESTRATION_TOKEN }}
+          COMMIT_SHA: ${{ inputs.commit }}
+          BOOTSTRAP_RUN_ID: ${{ inputs.run_id }}
+        run: |
+          python - <<'PY'
+          import json, os, re, subprocess, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          from bootstrap_runs import HCP, plan, require, verify_version
+          client = HCP()
+          sha, run_id = os.environ['COMMIT_SHA'], os.environ['BOOTSTRAP_RUN_ID']
+          require(re.fullmatch(r'[0-9a-f]{40}', sha) and re.fullmatch(r'run-[A-Za-z0-9]+', run_id), 'Invalid approval context')
+          run = client.call('GET', '/runs/' + run_id)['data']
+          require(run['attributes']['status'] == 'applied', 'Bootstrap must already be applied')
+          version = run['relationships']['configuration-version']['data']['id']
+          verify_version(client, version, sha)
+          # Read data from the reviewed commit; execute only current trusted main code.
+          registry = json.loads(subprocess.check_output(['git', 'show', sha + ':HCP/generated/projects.json'], text=True))
+          for identity in sorted(registry['projects']):
+              print(json.dumps(plan(client, 'core', sha, project=identity, allow_apply=True, configuration_version=version)))
+          PY

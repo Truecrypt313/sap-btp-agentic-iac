@@ -1,0 +1,21 @@
+# Gemeinsame Vorlage; CLI erzeugt separate DEV-, TEST- und PROD-Quelldateien.
+# Administrations-/IAM-Listen bleiben leer. Services verwenden zentrale Aliase.
+enabled: false
+costcenter: "12345"
+region: us10
+iaas_provider: AWS
+runtime: cloudfoundry
+beta_enabled: false
+skip_auto_entitlement: true
+labels: {}
+administrators_source: yaml
+administrators: []
+administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
+role_collections: {}
+role_assignments: {}
+cloud_foundry:
+  enabled: false
+  plan: trial
+  spaces: {}
+services:
+  catalog: []

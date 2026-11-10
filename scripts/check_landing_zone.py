@@ -38,6 +38,8 @@ ROOTS = [
     ("BTP/modules/service-catalog", True),
     ("BTP/projects", True),
     ("CloudFoundry/projects", True),
+    ("HCP/modules/project-workspaces", True),
+    ("HCP/bootstrap", True),
 ]
 
 
@@ -46,8 +48,7 @@ def run(command, cwd, env, label):
     subprocess.run(command, cwd=cwd, env=env, check=True)
 
 
-def checked_mock_plans(cwd, env, test_directory=None):
-    """Inspect real mock-plan actions, rather than asserting only equal outputs."""
+def mock_plans(cwd, env, test_directory=None):
     command = ["terraform", "test", "-json", "-verbose"]
     if test_directory:
         command.append("-test-directory=" + test_directory)
@@ -57,9 +58,28 @@ def checked_mock_plans(cwd, env, test_directory=None):
     for record in records:
         if record["type"] not in ["test_plan", "test_state"] and (record["type"] != "diagnostic" or result.returncode):
             print(record.get("@message", ""), flush=True)
+            if result.returncode and "diagnostic" in record:
+                print(record["diagnostic"].get("detail", ""), flush=True)
     if result.returncode:
         raise SystemExit("Checked mock-plan tests failed: " + result.stderr)
     plans = {record["@testrun"]: record["test_plan"] for record in records if record["type"] == "test_plan"}
+    return plans
+
+
+def checked_bootstrap_plans(cwd, env):
+    plans = mock_plans(cwd, env)
+    repeated = plans["repeat_bootstrap_in_same_mock_state"]
+    managed = [change for change in repeated.get("resource_changes", []) if change["mode"] == "managed"]
+    if len(managed) != 15 or any(change["change"]["actions"] != ["no-op"] for change in managed):
+        raise SystemExit("Repeated bootstrap must preserve all 15 managed mock objects with no-op actions")
+    if any(change["actions"] != ["no-op"] for change in repeated.get("output_changes", {}).values()):
+        raise SystemExit("Repeated bootstrap must not change output identities")
+    print("Bootstrap mock plan verified: all 15 objects and outputs no-op; no duplicate workspaces.", flush=True)
+
+
+def checked_mock_plans(cwd, env, test_directory=None):
+    """Inspect real mock-plan actions, rather than asserting only equal outputs."""
+    plans = mock_plans(cwd, env, test_directory)
     def changes(name):
         return [(item["address"], item["change"]["actions"]) for item in plans[name].get("resource_changes", []) if item["mode"] == "managed"]
     if test_directory:
@@ -83,18 +103,19 @@ def main():
     selected = parser.parse_args().only
     run([sys.executable, "scripts/build_landing_zone_config.py", "--check"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/build_project_schema.py"], ROOT, os.environ, ".")
+    run([sys.executable, "scripts/project_bootstrap.py", "check"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/check_state_addresses.py"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/build_landing_zone_schema.py"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/export_provider_schema.py", "--check"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/validate_landing_zone.py"], ROOT, os.environ, ".")
     run([sys.executable, "-m", "unittest", "discover", "-s", "scripts", "-p", "test_*.py"], ROOT, os.environ, ".")
-    run(["terraform", "fmt", "-check", "-recursive", "BTP", "CloudFoundry"], ROOT, os.environ, ".")
+    run(["terraform", "fmt", "-check", "-recursive", "BTP", "CloudFoundry", "HCP"], ROOT, os.environ, ".")
     # Keep even empty local workspace directories and generated child-module
     # lock files out of the user's checkout. Never copy states or credentials.
     with tempfile.TemporaryDirectory(prefix="landing-zone-check-") as temporary:
         temporary = Path(temporary)
         checkout = temporary / "project"
-        for directory in ["BTP", "CloudFoundry", "examples", "scripts/fixtures"]:
+        for directory in ["BTP", "CloudFoundry", "HCP", "examples", "scripts/fixtures"]:
             shutil.copytree(
                 ROOT / directory,
                 checkout / directory,
@@ -116,7 +137,12 @@ def main():
                 env["TF_WORKSPACE"] = "sap-cloudfoundry-test"
             if relative in ["BTP/projects", "CloudFoundry/projects"]:
                 env["TF_WORKSPACE"] = "sap-btp-test-neu-" + ("core" if relative == "BTP/projects" else "cf-dev")
+            if relative == "HCP/bootstrap":
+                env["TF_WORKSPACE"] = "sap-btp-project-bootstrap"
             init = ["terraform", "init", "-backend=false", "-input=false", "-no-color"]
+            if relative == "HCP/modules/project-workspaces":
+                shutil.copyfile(ROOT / "HCP/bootstrap/.terraform.lock.hcl", cwd / ".terraform.lock.hcl")
+                init.append("-lockfile=readonly")
             if relative in ["BTP/modules/environment-services", "BTP/modules/role-assignments", "BTP/modules/role-collections", "BTP/modules/srvc-baseline", "BTP/modules/directory", "BTP/modules/service-catalog", "CloudFoundry/modules/spaces"]:
                 provider = "sap/btp" if relative.startswith("BTP/") else "cloudfoundry/cloudfoundry"
                 parent = "BTP" if relative.startswith("BTP/") else "CloudFoundry"
@@ -147,6 +173,8 @@ def main():
                         canonical.write_bytes((checkout / "examples/landing-zone.enterprise.yaml").read_bytes())
                     if relative == "BTP/modules/directory":
                         checked_mock_plans(cwd, env)
+                    elif relative == "HCP/modules/project-workspaces":
+                        checked_bootstrap_plans(cwd, env)
                     else:
                         run(["terraform", "test", "-no-color"], cwd, env, relative)
                     if relative == "BTP":

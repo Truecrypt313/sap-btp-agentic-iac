@@ -7,12 +7,13 @@ Der Builder erzeugt daraus die versionierte
 
 - [Konfiguration bearbeiten, bauen und prüfen](docs/CONFIGURATION.md)
 - [Multi-Project-/Directory-Architektur und künftiger Deployment-Ablauf](docs/MULTI_PROJECT_ARCHITECTURE.md)
+- [Automatisierter Projekt-Bootstrap, einmaliges HCP-Setup und getrennte GitOps-Freigaben](docs/PROJECT_BOOTSTRAP.md)
 - [Nachweis des Konfigurations-Refactorings](docs/CONFIGURATION_REFACTOR_REPORT.md)
 
 - [Deployment, State-Erhalt und Migration](docs/MODULAR_LANDING_ZONE.md)
 - [Enterprise-Beispiel mit drei Umgebungen](examples/landing-zone.enterprise.yaml)
 - [Lokale Prüfungen ohne Infrastrukturänderungen](scripts/check_landing_zone.py)
-- [Attributreferenz für alle implementierten Ressourcen](docs/ATTRIBUTE_REFERENCE.md)
+- [Attributreferenz der SAP-BTP- und CF-Ressourcen](docs/ATTRIBUTE_REFERENCE.md)
 - [Schema v2, dynamischer Servicekatalog und Voraussetzungen](docs/SCHEMA_CATALOG_TEMPLATE.md)
 - [JSON Schema für Editor und CI](schemas/landing-zone.schema.json)
 - [AWS-Beispiel](examples/landing-zone.aws.yaml) / [Azure-Beispiel](examples/landing-zone.azure.yaml)

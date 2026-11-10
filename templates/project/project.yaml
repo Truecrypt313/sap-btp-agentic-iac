@@ -1,0 +1,7 @@
+# Technische ID und Anzeigename werden strukturell von der CLI eingesetzt.
+# Alle Provisionierung bleibt bis zu einem gesonderten Konfigurations-PR aus.
+project_id: template
+project_name: Template
+schema_version: 2
+account_type: trial
+deployment_enabled: false

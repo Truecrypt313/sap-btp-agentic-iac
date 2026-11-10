@@ -1,0 +1,14 @@
+# Bekannte Konventionen unseres Trial-Entwicklungsprofils, keine Quoten-Zusage.
+# Verfügbare Kapazitäten und Berechtigungen prüft weiterhin SAP beim Deployment.
+schema_version: 1
+profiles:
+  trial:
+    account_type: trial
+    region: us10
+    iaas_provider: AWS
+    environments: [DEV, TEST]
+    cloud_foundry_plan: trial
+    # Vor der ersten Subaccount-Erstellung: keine automatischen Standardpläne.
+    skip_auto_entitlement: true
+    # PROD wird als deaktivierte YAML vorbereitet, niemals als Trial-Workspace.
+    production_allowed: false

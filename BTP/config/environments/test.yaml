@@ -1,0 +1,112 @@
+# Vollständiger bisheriger TEST-Eintrag, einschließlich der mit PR #8
+# bereitgestellten Role Collections. Genau TEST verwenden; Map-Schlüssel sind stabil.
+TEST:
+  # Boolean, Schema-Standard true. false kann Ressourcen zur Löschung auswählen;
+  # bestehendes prevent_destroy kann den Plan dann blockieren. Immer Plan prüfen.
+  enabled: true
+  # Optionale Strings: null/ausgelassen behält abgeleitete Namen bzw. keinen
+  # description-Wert. Subdomain enthält weiterhin die bestehende random_uuid.
+  # Namen/Region/Subdomain/Parent können Ressourcenänderungen/Ersetzungen auslösen.
+  name: null
+  subdomain: null
+  description: null
+  # Region aus dem Live-BTP-Katalog; null verlangt eindeutige Auswahl.
+  # Provider ist ein Filter (AWS/AZURE/GCP/SAP/ALI/IBM), kein Subaccount-API-Feld.
+  # runtime ist Katalogprädikat, Standard cloudfoundry.
+  region: us10
+  iaas_provider: AWS
+  runtime: cloudfoundry
+  # parent_id: optionale UUID; usage: optional UNSET/NOT_USED_FOR_PRODUCTION/
+  # USED_FOR_PRODUCTION (letzteres nur Enterprise-PROD). null bleibt unverändert.
+  # skip_auto_entitlement: optionales Erstellungs-Boolean, null ist nicht false.
+  parent_id: null
+  usage: null
+  skip_auto_entitlement: null
+  # Fünfstelliger String; beta_enabled Boolean (Standard false).
+  # labels: Map von String-Listen (Standard {}), stage/costcenter reserviert;
+  # höchstens acht zusätzliche Schlüssel, 63 Zeichen je Wert, keine Secrets.
+  costcenter: "12345"
+  beta_enabled: true
+  labels: {}
+
+  # BTP-IAM. administrators_source fehlt absichtlich: Schema-Standard yaml.
+  # administrators ist eine Liste von Benutzernamen (Standard []); jede Ergänzung
+  # gewährt die unten genannte Collection, Entfernen entzieht diese Zuweisung.
+  # Administratorrechte sind weitreichend; keine automatische CF-Space-Rolle.
+  administrators: []
+  # Collection-String (Standard Subaccount Administrator), origin String/null.
+  # null bleibt Providerverhalten; keine bestimmte Identitätsquelle annehmen.
+  administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
+  # Map stabiler Binding-Schlüssel (Standard {}). Genau role_collection_key
+  # (verwaltete Collection hier) ODER role_collection_name (externe Collection).
+  # Genau user_name, group_name ODER attribute_name + attribute_value.
+  # Gruppen/Attribute und verwaltete Collections verlangen explizite origin.
+  # Für künftige Zuweisungen dieser TEST-Collections die geprüfte Origin sap.default
+  # explizit verwenden; keine implizite IdP-Voreinstellung aus null ableiten.
+  # Origin referenziert einen bestehenden IdP; neue IdPs werden hier nicht erstellt.
+  role_assignments: {}
+  # Collections bündeln BTP-Rollen; ihre Existenz allein weist sie niemandem zu.
+  # Map-Schlüssel steuern for_each im bestehenden Modul role_collections.
+  # name ist Pflicht-String; description optional (hier ausgelassen = null).
+  # roles: nicht leere Map; jedes Tripel aus name/role_template_name/
+  # role_template_app_id ist exakt aus dem bereitgestellten Rollenkatalog übernommen.
+  # Keine App-ID, Rolle, Großschreibung oder Schlüssel ändern: Identität und Rechte!
+  role_collections:
+    feature_flags_administrator:
+      name: TEST_FeatureFlags_Administrator
+      roles:
+        dashboard:
+          name: Feature Flags Service dashboard Administrator
+          role_template_name: FeatureFlags_Dashboard_Administrator
+          role_template_app_id: feature-flags!b1765
+    feature_flags_auditor:
+      name: TEST_FeatureFlags_Auditor
+      roles:
+        dashboard:
+          name: Feature Flags Service dashboard Auditor
+          role_template_name: FeatureFlags_Dashboard_Auditor
+          role_template_app_id: feature-flags!b1765
+
+  # BTP verwaltet das CF-Environment/die Org, sap-cloudfoundry-test die Spaces.
+  # CF-IAM ist separat von BTP-IAM. Org-Rollen sind hier noch nicht konfigurierbar;
+  # deren spätere Verwaltung benötigt eigene Module und einen geprüften Vorschlag.
+  cloud_foundry:
+    # Boolean, Standard false; Deaktivieren kann die vorhandene Org betreffen.
+    enabled: true
+    # String; trial im Trial, standard bei Enterprise. Änderung kann Org ersetzen.
+    plan: trial
+    # Weitere Felder fehlen absichtlich: name/parameters/parameters_key/timeouts
+    # normalisieren zu null, service_name/environment_type zu cloudfoundry,
+    # landscape_label zu "" (eindeutige Auswahl aus dem TEST-Katalog erforderlich).
+    # parameters wäre nicht geheimer JSON-String; Secrets nur über parameters_key
+    # und HCP environment_parameters["TEST/<key>"], niemals inline.
+    spaces:
+      # Stabiler for_each-Schlüssel; bestehende Ressource im separaten TEST-State.
+      project:
+        name: test-space-project-abc
+        # Weitere Space-Felder bleiben ausgelassen: allow_ssh (Boolean),
+        # isolation_segment (UUID), labels/annotations (String-Maps) und
+        # member_origin (IdP-Origin für einfache Listen) werden null.
+        # managers/developers standardmäßig [] (Benutzernamen), roles {}.
+        # roles unterstützt type space_manager/space_developer/space_auditor/
+        # space_supporter und genau user (UUID) ODER username (String).
+        # origin nur mit username. Änderungen sind Berechtigungsänderungen;
+        # Manager verwalten Space-Mitgliedschaften, Developer deployen Anwendungen.
+        # legacy_manager/legacy_developer sind ausschließlich DEV/project erlaubt.
+
+  # Bestehende Aktivierungen: Entitlements und Subscription/Instanz unverändert.
+  # enabled ist Boolean (Komfortservice-Standard false). Entfernen/Deaktivieren
+  # kann Ressourcen löschen. plan ist exakter Katalog-String, kein freier Anzeigename.
+  services:
+    alert_notification:
+      enabled: true
+      plan: standard
+      # Instanzerstellung (Boolean, Standard true), zusätzlich zum Entitlement.
+      instance: true
+    feature_flags:
+      enabled: true
+      plan: lite
+      # Keine Lite-Instanz (explizit false; Schema-Standard wäre true), bestehende
+      # Dashboard-Subscription behalten (Standard true). Rechte folgen aus IAM.
+      instance: false
+      dashboard: true

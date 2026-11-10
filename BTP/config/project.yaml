@@ -1,0 +1,16 @@
+# Globale Projektparameter; DEV/TEST/PROD stehen ausschließlich in environments/.
+# Alle drei Felder sind Pflichtfelder. Keine Credentials oder HCP-Werte eintragen.
+
+# Ganzzahl: Das bestehende Terraform-Schema unterstützt 1 und 2.
+# Version 2 erhält den Service-Katalog; dieses Refactoring ändert die Version nicht.
+schema_version: 2
+
+# String: trial oder enterprise. Steuert Profil- und Planprüfungen.
+# trial untersagt aktiviertes PROD. Ein Profilwechsel ist keine Account-Migration
+# und kann Service-/CF-Pläne beeinflussen: separat mit Terraform-Plan prüfen.
+account_type: trial
+
+# String aus Buchstaben, Ziffern, Leerzeichen und Bindestrichen; beginnt alphanumerisch.
+# Grundlage für abgeleitete Subaccount-, Org- und Servicenamen. Änderungen können
+# Umbenennungen oder Ersetzungen auslösen und verändern die Handoff-Fingerprints.
+project_name: Project ABC

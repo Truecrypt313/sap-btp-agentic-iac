@@ -1,8 +1,12 @@
 # SAP BTP Agentic Infrastructure as Code
 
 Versionierte Landing-Zone für DEV, TEST und PROD mit getrennten BTP- und
-Cloud-Foundry-States. Die aktive, nicht geheime Konfiguration liegt in
-[BTP/landing-zone.yaml](BTP/landing-zone.yaml).
+Cloud-Foundry-States. Bearbeitbare Quellen liegen in [BTP/config](BTP/config).
+Der Builder erzeugt daraus die versionierte
+[BTP/landing-zone.yaml](BTP/landing-zone.yaml), die HCP unmittelbar verwendet.
+
+- [Konfiguration bearbeiten, bauen und prüfen](docs/CONFIGURATION.md)
+- [Nachweis des Konfigurations-Refactorings](docs/CONFIGURATION_REFACTOR_REPORT.md)
 
 - [Deployment, State-Erhalt und Migration](docs/MODULAR_LANDING_ZONE.md)
 - [Enterprise-Beispiel mit drei Umgebungen](examples/landing-zone.enterprise.yaml)
@@ -12,9 +16,10 @@ Cloud-Foundry-States. Die aktive, nicht geheime Konfiguration liegt in
 - [JSON Schema für Editor und CI](schemas/landing-zone.schema.json)
 - [AWS-Beispiel](examples/landing-zone.aws.yaml) / [Azure-Beispiel](examples/landing-zone.azure.yaml)
 
-Die aktive Konfiguration erhält DEV und den bisher geplanten TEST-Subaccount.
-TEST-CF und zusätzliche Services bleiben zunächst aus, PROD ist im Trial
-deaktiviert. Keine Credentials, persönlichen Zugänge oder State-Dateien in YAML
+Die aktive Konfiguration erhält DEV und den bereitgestellten TEST-Subaccount
+einschließlich TEST-CF, Alert Notification, Feature-Flags-Dashboard und dessen
+beiden Role Collections. PROD bleibt im Trial deaktiviert.
+Keine Credentials, persönlichen Zugänge oder State-Dateien in YAML
 oder Git eintragen.
 
 Für die Python-Prüfungen zuerst die Abhängigkeiten aus scripts/requirements.txt

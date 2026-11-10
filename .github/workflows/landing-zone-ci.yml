@@ -40,6 +40,8 @@ jobs:
           terraform_wrapper: false
       - name: Python dependencies
         run: python -m pip install -r scripts/requirements.txt
+      - name: Modular YAML matches the versioned Terraform contract
+        run: python scripts/build_landing_zone_config.py --check
       - name: Git diff, safe files and provider lock preservation
         run: python scripts/check_repository.py --base "$AUDIT_BASE"
       - name: Install pinned secret scanner

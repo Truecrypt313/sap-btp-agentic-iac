@@ -1,0 +1,48 @@
+# Vorbereitete PROD-Konfiguration. Keine produktiven Ressourcen im Trial!
+# Fehlende IAM-/Space-/Service-Felder sind absichtlich nicht ergänzt worden.
+PROD:
+  # Boolean (Schema-Standard true): false hält PROD aus dem aktiven for_each heraus.
+  # true ist bei account_type=trial verboten. Auch später nur mit geprüftem Plan
+  # aktivieren. Bei existierenden Ressourcen kann Deaktivieren Löschungen planen.
+  enabled: false
+  # Optionale Strings: null erhält Namensableitung aus Stage/Projekt/bestehender
+  # UUID (Subdomain) bzw. keinen description-Wert. Spätere Namens-/Region-/Parent-
+  # Änderungen können Ressourcen ersetzen; niemals eine neue UUID erzwingen.
+  name: null
+  subdomain: null
+  description: null
+  # Region als Live-Katalog-String (null verlangt eindeutige Auswahl).
+  # Provider: AWS/AZURE/GCP/SAP/ALI/IBM, Katalogfilter; runtime Standard cloudfoundry.
+  region: us10
+  iaas_provider: AWS
+  runtime: cloudfoundry
+  # Optionale Parent-UUID und usage-Enum UNSET/NOT_USED_FOR_PRODUCTION/
+  # USED_FOR_PRODUCTION; produktive Nutzung nur Enterprise-PROD.
+  # skip_auto_entitlement: optionales Erstellungs-Boolean; null nicht zu false ändern.
+  parent_id: null
+  usage: null
+  skip_auto_entitlement: null
+  # Fünfstelliger String. Beta-Funktionen: Boolean, Schema-Standard false.
+  costcenter: "12345"
+  beta_enabled: false
+  # BTP-IAM bleibt ausgelassen: administrators_source normalisiert zu yaml,
+  # administrators zu [], role_collections/role_assignments zu {}.
+  # Später hier umgebungseigene Collections (name + Rollen-Tripel), Nutzer-, Gruppen-
+  # oder Attributzuweisungen ergänzen. Verwaltete Collections/Gruppen/Attribute
+  # verlangen explizite IdP-origin. Administratorrechte nur gezielt vergeben.
+  # Keine zentralen Policies aus ../iam/policies.yaml aktiv importieren.
+  cloud_foundry:
+    # Boolean (Standard false): auch CF bleibt deaktiviert.
+    enabled: false
+    # Zukünftiger Enterprise-Plan. Das inaktive standard-Feld aktiviert nichts;
+    # Trial-CF verlangt trial. Planänderungen können eine Org ersetzen.
+    plan: standard
+    # Map stabiler Space-Schlüssel (Standard {}). Spätere Space-Rollen unterscheiden
+    # sich von BTP-IAM; managers/developers sind Benutzernamen-Listen, roles eine Map
+    # mit type und user-UUID ODER username; origin nur mit username.
+    # CF-Org-Rollen sind noch nicht implementiert. Separate Module/Review vorsehen.
+    spaces: {}
+  # Keine aktivierten Services. Komfortservices normalisieren zu enabled=false;
+  # zusätzliche catalog-Aliase/Entitlements/Instanzen/Subscriptions bleiben leer.
+  # Definitionen im Katalog allein erzeugen keine Ressourcen.
+  services: {}

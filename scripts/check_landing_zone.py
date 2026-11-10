@@ -78,6 +78,24 @@ def checked_bootstrap_plans(cwd, env):
     print("Bootstrap mock plan verified: all 9 HCP Free objects and outputs no-op; no team/RBAC objects or duplicate workspaces.", flush=True)
 
 
+def checked_vcs_plans(cwd, env):
+    plans = mock_plans(cwd, env)
+    repeated = plans["repeat_plan_with_same_discovered_connection"]
+    managed = [c for c in repeated.get("resource_changes", []) if c["mode"] == "managed"]
+    if len(managed) != 14 or any(c["change"]["actions"] != ["no-op"] for c in managed):
+        raise SystemExit("Native VCS discovery must preserve all 14 project-bootstrap objects on the repeat plan")
+    if any(c["actions"] != ["no-op"] for c in repeated.get("output_changes", {}).values()):
+        raise SystemExit("Native VCS discovery must preserve output identities")
+    for name, field, expected in [
+        ("native_github_app_uses_internal_id_and_repository_anchor", "github_app_installation_id", "ghain-1111111111111111"),
+        ("keep_oauth_only_when_really_used_by_reference", "oauth_token_id", "ot-1111111111111111"),
+    ]:
+        workspaces = [c["change"]["after"] for c in plans[name].get("resource_changes", []) if c["mode"] == "managed" and c["type"] == "tfe_workspace"]
+        if len(workspaces) != 3 or any(w["vcs_repo"][0][field] != expected for w in workspaces):
+            raise SystemExit("Discovered VCS identity was not forwarded to every managed project workspace")
+    print("Native VCS discovery verified: App/OAuth forwarded to all three workspaces; 14 objects and outputs no-op on repeat.", flush=True)
+
+
 def checked_mock_plans(cwd, env, test_directory=None):
     """Inspect real mock-plan actions, rather than asserting only equal outputs."""
     plans = mock_plans(cwd, env, test_directory)
@@ -176,6 +194,8 @@ def main():
                         checked_mock_plans(cwd, env)
                     elif relative == "HCP/modules/project-workspaces":
                         checked_bootstrap_plans(cwd, env)
+                    elif relative == "HCP/bootstrap":
+                        checked_vcs_plans(cwd, env)
                     else:
                         run(["terraform", "test", "-no-color"], cwd, env, relative)
                     if relative == "BTP":

@@ -106,7 +106,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -r scripts/requirements.txt
-      - name: After bootstrap, queue project core plans using only the plan token
+      - name: After bootstrap, queue project core plans with the protected HCP Free user token
         env:
           HCP_ORCHESTRATION_TOKEN: ${{ secrets.HCP_ORCHESTRATION_TOKEN }}
           COMMIT_SHA: ${{ inputs.commit }}

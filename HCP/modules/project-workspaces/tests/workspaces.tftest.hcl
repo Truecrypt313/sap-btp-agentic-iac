@@ -3,15 +3,14 @@ mock_provider "tfe" {
   mock_resource "tfe_workspace" { defaults = { id = "ws-1111111111111111" } }
 }
 variables {
-  operator_teams = { plan = "team-3333333333333333", core_apply = "team-4444444444444444", cf_apply = "team-5555555555555555" }
-  enabled        = true
+  enabled = true
   projects = {
     alpha = { account_profile = "trial", environments = ["DEV", "TEST"], cf_environments = ["DEV", "TEST"] }
     beta  = { account_profile = "trial", environments = ["DEV"], cf_environments = [] }
   }
   vcs_auth = { oauth_token_id = "ot-1111111111111111" }
   account_bindings = {
-    trial = { btp_variable_set_ids = ["varset-1111111111111111"], cf_variable_set_ids = ["varset-2222222222222222"], directory_reader_team_id = "team-1111111111111111", output_reader_team_id = "team-2222222222222222" }
+    trial = { btp_variable_set_ids = ["varset-1111111111111111"], cf_variable_set_ids = ["varset-2222222222222222"] }
   }
 }
 run "project_scoped_workspaces_tags_vcs_and_routes" {
@@ -34,18 +33,11 @@ run "routing_and_credentials_are_references_only" {
     error_message = "Only public project/environment inputs and existing variable-set attachments, never credential values."
   }
 }
-run "readers_have_no_write_or_apply_permission" {
-  command = plan
-  assert {
-    condition     = alltrue([for s in tfe_workspace_settings.project : s.execution_mode == "remote" && !s.global_remote_state && !s.project_remote_state]) && tfe_team_access.directory_reader["alpha"].permissions[0].state_versions == "read" && tfe_team_access.output_reader["alpha"].permissions[0].state_versions == "read-outputs" && alltrue([for p in concat(values(tfe_team_access.directory_reader), values(tfe_team_access.output_reader)) : p.permissions[0].runs == "read" && p.permissions[0].variables == "none" && !p.permissions[0].workspace_locking && !p.permissions[0].run_tasks && !p.permissions[0].policy_overrides])
-    error_message = "Directory preflight and CF output tokens must retain separate least-privilege read permissions."
-  }
-}
 run "disabled_bootstrap_has_no_managed_objects" {
   command = plan
   variables { enabled = false }
   assert {
-    condition     = length(tfe_workspace.project) == 0 && length(tfe_variable.routing) == 0 && length(tfe_workspace_variable_set.credentials) == 0 && length(tfe_team_access.directory_reader) == 0
+    condition     = length(tfe_workspace.project) == 0 && length(tfe_variable.routing) == 0 && length(tfe_workspace_variable_set.credentials) == 0
     error_message = "Default rollout-off mode must not touch HCP."
   }
 }
@@ -80,53 +72,16 @@ run "github_app_reference_is_supported" {
 run "reject_missing_cf_credential_set" {
   command = plan
   variables {
-    account_bindings = { trial = { btp_variable_set_ids = ["varset-1111111111111111"], cf_variable_set_ids = [], directory_reader_team_id = "team-1111111111111111", output_reader_team_id = "team-2222222222222222" } }
+    account_bindings = { trial = { btp_variable_set_ids = ["varset-1111111111111111"], cf_variable_set_ids = [] } }
   }
   expect_failures = [var.account_bindings]
 }
-run "remote_state_consumers_are_exactly_same_project_cf_workspaces" {
-  command = plan
-  override_resource {
-    override_during = plan
-    target          = tfe_workspace.project["alpha/core"]
-    values          = { id = "ws-1111111111111111" }
-  }
-  override_resource {
-    override_during = plan
-    target          = tfe_workspace.project["alpha/cf/DEV"]
-    values          = { id = "ws-2222222222222222" }
-  }
-  override_resource {
-    override_during = plan
-    target          = tfe_workspace.project["alpha/cf/TEST"]
-    values          = { id = "ws-3333333333333333" }
-  }
-  override_resource {
-    override_during = plan
-    target          = tfe_workspace.project["beta/core"]
-    values          = { id = "ws-4444444444444444" }
-  }
-  assert {
-    condition     = tfe_workspace_settings.project["alpha/core"].remote_state_consumer_ids == toset(["ws-2222222222222222", "ws-3333333333333333"]) && length(tfe_workspace_settings.project["beta/core"].remote_state_consumer_ids) == 0 && alltrue([for key, settings in tfe_workspace_settings.project : length(settings.remote_state_consumer_ids) == 0 if startswith(key, "alpha/cf/")])
-    error_message = "No global, foreign-project or CF-to-CF state access may be granted."
-  }
-}
-run "operators_receive_only_their_workspace_class" {
+run "outputs_handoff_does_not_grant_full_state_sharing" {
   command = plan
   assert {
-    condition = (length(tfe_team_access.operator) == 8 &&
-      tfe_team_access.operator["alpha/core/apply"].team_id == var.operator_teams.core_apply &&
-      tfe_team_access.operator["alpha/cf/DEV/apply"].team_id == var.operator_teams.cf_apply &&
-      alltrue([for key, access in tfe_team_access.operator :
-        access.team_id == var.operator_teams.plan && access.permissions[0].runs == "plan" if endswith(key, "/plan")
-    ]) && alltrue([for access in tfe_team_access.operator : access.permissions[0].variables == "none" && access.permissions[0].state_versions == "read-outputs" && !access.permissions[0].policy_overrides]))
-    error_message = "Future projects need automatic operator permissions; runtime reader tokens must never gain apply access."
+    condition = alltrue([for s in tfe_workspace_settings.project :
+      s.execution_mode == "remote" && !s.global_remote_state && !s.project_remote_state && length(s.remote_state_consumer_ids) == 0
+    ])
+    error_message = "Core and CF must use the Outputs API without any full-state consumer grants."
   }
-}
-run "runtime_reader_cannot_also_be_operator" {
-  command = plan
-  variables {
-    operator_teams = { plan = "team-3333333333333333", core_apply = "team-1111111111111111", cf_apply = "team-5555555555555555" }
-  }
-  expect_failures = [var.operator_teams]
 }

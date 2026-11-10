@@ -70,11 +70,12 @@ def checked_bootstrap_plans(cwd, env):
     plans = mock_plans(cwd, env)
     repeated = plans["repeat_bootstrap_in_same_mock_state"]
     managed = [change for change in repeated.get("resource_changes", []) if change["mode"] == "managed"]
-    if len(managed) != 15 or any(change["change"]["actions"] != ["no-op"] for change in managed):
-        raise SystemExit("Repeated bootstrap must preserve all 15 managed mock objects with no-op actions")
+    allowed = {"tfe_workspace", "tfe_workspace_settings", "tfe_variable", "tfe_workspace_variable_set"}
+    if len(managed) != 9 or {change["type"] for change in managed} != allowed or any(change["change"]["actions"] != ["no-op"] for change in managed):
+        raise SystemExit("Repeated HCP Free bootstrap must preserve its 9 workspace/settings/routing/attachment objects with no-op actions; no team/RBAC objects")
     if any(change["actions"] != ["no-op"] for change in repeated.get("output_changes", {}).values()):
         raise SystemExit("Repeated bootstrap must not change output identities")
-    print("Bootstrap mock plan verified: all 15 objects and outputs no-op; no duplicate workspaces.", flush=True)
+    print("Bootstrap mock plan verified: all 9 HCP Free objects and outputs no-op; no team/RBAC objects or duplicate workspaces.", flush=True)
 
 
 def checked_mock_plans(cwd, env, test_directory=None):

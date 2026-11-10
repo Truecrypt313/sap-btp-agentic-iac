@@ -66,10 +66,13 @@ Im zukünftigen Core-Workspace sind erforderlich:
 - Die von HCP gelieferten Umgebungsvariablen `TFC_RUN_ID`, `TFC_WORKSPACE_ID`
   und `TFC_WORKSPACE_NAME`.
 - Eine **sensitive Environment-Variable** `DIRECTORY_PREFLIGHT_HCP_TOKEN`.
-  Das Token braucht Lesezugriff auf Runs, Workspace-Metadaten und den State
-  ausschließlich dieses Workspaces. Keine Schreibrechte vorsehen. Das Lesen
-  von State ist sicherheitsrelevant, weil der State sensible Werte enthalten
-  kann. Kein Token in Terraform-/YAML-Variablen, Query, Logs oder Git ablegen.
+  Der Helfer verwendet ausschließlich Leseoperationen auf Runs, Metadaten und
+  den tatsächlichen State desselben Workspaces. In unserer HCP-Free-Umgebung
+  wird dafür ein geschützter User-Token verwendet; dessen Owner-Rechte können
+  weiter reichen und sind nicht technisch auf Lesen begrenzt. Details und
+  einmalige Ablage stehen im [Free-Bootstrap-Setup](PROJECT_BOOTSTRAP.md).
+  State kann sensible Werte enthalten. Kein Token in Terraform-/YAML-Variablen,
+  Query, Logs oder Git ablegen.
 - Netzwerkzugriff auf `https://app.terraform.io/api/v2` und die von HCP
   gelieferte HTTPS-State-Download-Adresse. Nur GET; kein Token am Download,
   keine Weiterleitung von Authentifizierung, keine Redirects. Der State bleibt

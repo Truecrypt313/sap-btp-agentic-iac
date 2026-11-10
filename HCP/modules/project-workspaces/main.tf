@@ -26,35 +26,16 @@ variable "vcs_auth" {
 variable "account_bindings" {
   # References only. Secret values are never read or written by this state.
   type = map(object({
-    btp_variable_set_ids     = set(string)
-    cf_variable_set_ids      = set(string)
-    directory_reader_team_id = string
-    output_reader_team_id    = string
+    btp_variable_set_ids = set(string)
+    cf_variable_set_ids  = set(string)
   }))
   validation {
     condition = !var.enabled || alltrue([for p in values(var.projects) : try(
       length(var.account_bindings[p.account_profile].btp_variable_set_ids) > 0 &&
       (length(p.cf_environments) == 0 || length(var.account_bindings[p.account_profile].cf_variable_set_ids) > 0) &&
-      alltrue([for id in setunion(var.account_bindings[p.account_profile].btp_variable_set_ids, var.account_bindings[p.account_profile].cf_variable_set_ids) : can(regex("^varset-[A-Za-z0-9]+$", id))]) &&
-      can(regex("^team-[A-Za-z0-9]+$", var.account_bindings[p.account_profile].directory_reader_team_id)) &&
-      can(regex("^team-[A-Za-z0-9]+$", var.account_bindings[p.account_profile].output_reader_team_id)) &&
-      var.account_bindings[p.account_profile].directory_reader_team_id != var.account_bindings[p.account_profile].output_reader_team_id, false)
+      alltrue([for id in setunion(var.account_bindings[p.account_profile].btp_variable_set_ids, var.account_bindings[p.account_profile].cf_variable_set_ids) : can(regex("^varset-[A-Za-z0-9]+$", id))]), false)
     ])
-    error_message = "Each used profile requires existing scoped credential-set IDs and distinct read-state/read-outputs teams."
-  }
-}
-variable "operator_teams" {
-  type    = object({ plan = string, core_apply = string, cf_apply = string })
-  default = { plan = "", core_apply = "", cf_apply = "" }
-  validation {
-    condition = !var.enabled || (
-      alltrue([for id in values(var.operator_teams) : can(regex("^team-[A-Za-z0-9]+$", id))]) &&
-      length(toset(values(var.operator_teams))) == 3 &&
-      length(setintersection(toset(values(var.operator_teams)), toset(flatten([
-        for b in values(var.account_bindings) : [b.directory_reader_team_id, b.output_reader_team_id]
-      ])))) == 0
-    )
-    error_message = "Plan, Core-Apply and CF-Apply require distinct existing teams, separate from both runtime reader teams."
+    error_message = "Each used profile requires existing credential-set IDs; HCP Free needs no additional teams or custom RBAC."
   }
 }
 locals {
@@ -74,10 +55,6 @@ locals {
     { for key, w in local.workspaces : "${key}/project_id" => { workspace = key, key = "project_id", value = w.project } },
     { for key, w in local.workspaces : "${key}/environment" => { workspace = key, key = "environment", value = w.stage } if w.kind == "cf" }
   )
-  operators = merge(
-    { for key, w in local.workspaces : "${key}/plan" => { workspace = key, team = var.operator_teams.plan, runs = "plan" } },
-    { for key, w in local.workspaces : "${key}/apply" => { workspace = key, team = w.kind == "core" ? var.operator_teams.core_apply : var.operator_teams.cf_apply, runs = "apply" } }
-  )
 }
 resource "tfe_workspace" "project" {
   for_each               = local.workspaces
@@ -89,7 +66,7 @@ resource "tfe_workspace" "project" {
   auto_apply_run_trigger = false
   allow_destroy_plan     = false
   force_delete           = false
-  # No webhook run before inputs, credential attachments and permissions exist.
+  # No webhook run before inputs and credential attachments exist.
   queue_all_runs        = false
   speculative_enabled   = true
   file_triggers_enabled = true
@@ -111,9 +88,9 @@ resource "tfe_workspace_settings" "project" {
   execution_mode       = "remote"
   global_remote_state  = false
   project_remote_state = false
-  remote_state_consumer_ids = each.value.kind == "core" ? toset([
-    for key, w in local.workspaces : tfe_workspace.project[key].id if w.kind == "cf" && w.project == each.value.project
-  ]) : toset([])
+  # tfe_outputs uses the Outputs API with a user token. No workspace needs
+  # another workspace's complete state for the BTP/CF handoff.
+  remote_state_consumer_ids = []
   lifecycle { prevent_destroy = true }
 }
 resource "tfe_variable" "routing" {
@@ -130,51 +107,6 @@ resource "tfe_workspace_variable_set" "credentials" {
   for_each        = local.bindings
   workspace_id    = tfe_workspace.project[each.value.workspace].id
   variable_set_id = each.value.variable_set
-  lifecycle { prevent_destroy = true }
-}
-resource "tfe_team_access" "directory_reader" {
-  for_each     = local.projects
-  workspace_id = tfe_workspace.project["${each.key}/core"].id
-  team_id      = var.account_bindings[each.value.account_profile].directory_reader_team_id
-  permissions {
-    runs              = "read"
-    variables         = "none"
-    state_versions    = "read"
-    sentinel_mocks    = "none"
-    workspace_locking = false
-    run_tasks         = false
-    policy_overrides  = false
-  }
-  lifecycle { prevent_destroy = true }
-}
-resource "tfe_team_access" "output_reader" {
-  for_each     = { for id, p in local.projects : id => p if length(p.cf_environments) > 0 }
-  workspace_id = tfe_workspace.project["${each.key}/core"].id
-  team_id      = var.account_bindings[each.value.account_profile].output_reader_team_id
-  permissions {
-    runs              = "read"
-    variables         = "none"
-    state_versions    = "read-outputs"
-    sentinel_mocks    = "none"
-    workspace_locking = false
-    run_tasks         = false
-    policy_overrides  = false
-  }
-  lifecycle { prevent_destroy = true }
-}
-resource "tfe_team_access" "operator" {
-  for_each     = local.operators
-  workspace_id = tfe_workspace.project[each.value.workspace].id
-  team_id      = each.value.team
-  permissions {
-    runs              = each.value.runs
-    variables         = "none"
-    state_versions    = "read-outputs"
-    sentinel_mocks    = "none"
-    workspace_locking = false
-    run_tasks         = false
-    policy_overrides  = false
-  }
   lifecycle { prevent_destroy = true }
 }
 output "workspace_ids" { value = { for key, w in tfe_workspace.project : key => w.id } }

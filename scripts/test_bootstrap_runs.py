@@ -94,6 +94,14 @@ class BootstrapRunTests(unittest.TestCase):
                 runs.plan(self.client, "bootstrap", SHA)
             self.assertFalse(any(c[0] == "POST" for c in self.client.calls))
 
+    def test_vcs_version_mismatch_fails_immediately_without_retry(self):
+        self.client.ingress["commit-sha"] = "2" * 40
+        with patch.object(runs.time, "sleep") as pause, self.assertRaises(ConfigurationError):
+            runs.plan(self.client, "bootstrap", SHA)
+        pause.assert_not_called()
+        self.assertEqual(sum(path.endswith("/ingress-attributes") for _, path, _ in self.client.calls), 1)
+        self.assertFalse(any(method == "POST" for method, _, _ in self.client.calls))
+
     def test_wrong_workspace_settings_rejected(self):
         for key, value in [("name", "sap-btp-core"), ("auto-apply", True), ("working-directory", "BTP"), ("execution-mode", "local")]:
             self.client = FakeHCP()

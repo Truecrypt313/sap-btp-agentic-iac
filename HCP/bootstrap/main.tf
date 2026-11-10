@@ -20,12 +20,8 @@ variable "vcs_auth" {
   default = {}
 }
 variable "account_bindings" {
-  type    = map(object({ btp_variable_set_ids = set(string), cf_variable_set_ids = set(string), directory_reader_team_id = string, output_reader_team_id = string }))
+  type    = map(object({ btp_variable_set_ids = set(string), cf_variable_set_ids = set(string) }))
   default = {}
-}
-variable "operator_teams" {
-  type    = object({ plan = string, core_apply = string, cf_apply = string })
-  default = { plan = "", core_apply = "", cf_apply = "" }
 }
 locals {
   registry = jsondecode(file("${path.module}/../generated/projects.json"))
@@ -36,7 +32,6 @@ module "workspaces" {
   projects         = local.registry.projects
   vcs_auth         = var.vcs_auth
   account_bindings = var.account_bindings
-  operator_teams   = var.operator_teams
 }
 output "project_workspaces" {
   value = module.workspaces.workspace_names

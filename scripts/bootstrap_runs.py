@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""GitOps run orchestration only. Workspace/variable/permission CRUD is Terraform."""
+"""GitOps run orchestration only. Workspace/variable CRUD is Terraform.
+
+HCP Free authenticates through a protected user token, whose actual permissions
+come from its user. Workflow approval guards do not narrow the token's API scope.
+"""
 import argparse
 import json
 import os

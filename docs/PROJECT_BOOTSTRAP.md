@@ -2,7 +2,7 @@
 
 `project_bootstrap.py` bereitet Projekte und ihre HCP-Absicht deterministisch in
 Git vor. Ausschließlich Terraform mit dem bereits gepinnten TFE-Provider 0.83.0
-verwaltet Workspaces, Variablen, Set-Anbindungen und Leserechte. Der Python-
+verwaltet Workspaces, Variablen und Set-Anbindungen. Der Python-
 Run-Client plant und bestätigt Terraform-Runs; er besitzt keine Workspace-,
 Credential-, State- oder Berechtigungs-CRUD-Implementierung.
 
@@ -138,72 +138,57 @@ weder Workspace-UI-Konfiguration noch erneutes Eintragen von Credentials nötig.
    `{github_app_installation_id = "<ghain-ID>"}` als HCL-Terraform-Variable.
    Dies sind Referenz-IDs, keine OAuth-Secret-Werte. Die tatsächliche GitHub-
    Autorisierung wird einmalig in HCP eingerichtet.
-3. Zwei dedizierte Leser-Teams und ihre Tokens einmalig bereitstellen. Das
-   Directory-Team benötigt auf zukünftigen Core-Workspaces `runs=read`,
-   `state_versions=read`; das Output-Team nur `state_versions=read-outputs`.
-   Keine Schreib-, Apply-, Variablen- oder Adminrechte vergeben. Die einzelnen
-   Workspace-Team-Anbindungen erstellt Terraform automatisch. Die Tokens
-   haben damit aggregierten Lesezugriff auf die neu verwalteten Core-Workspaces;
-   sie dürfen keine zusätzlichen Legacy-/Organisationsrechte besitzen.
-   Zusätzlich einmalig getrennte Orchestrierungs-Teams für Plan, Core-Apply und
-   CF-Apply bereitstellen. Ihre Tokens gehören ausschließlich in die jeweiligen
-   geschützten GitHub-Environments, niemals in Provider-Credential-Sets.
-   `operator_teams` im Bootstrap-Workspace referenziert diese drei Team-IDs:
-
-   ```hcl
-   { plan = "<team-ID-Plan>", core_apply = "<team-ID-Core>", cf_apply = "<team-ID-CF>" }
-   ```
-
-   Terraform gewährt dem Plan-Team Plan-Rechte auf neue Core-/CF-Workspaces,
-   dem Core-Team Apply nur auf neue Core-Workspaces und dem CF-Team Apply nur
-   auf neue CF-Workspaces. Variablen-/State-Schreibrechte und Policy-Overrides
-   bleiben aus. Operator- und Leser-Teams müssen unterschiedliche IDs besitzen.
-   Damit sind keine manuellen Team-Anbindungen pro weiterem Projekt nötig.
+3. Für **HCP Terraform Free (dauerhaft)** einmalig einen HCP-**User-API-Token**
+   des für die Automatisierung verwendeten Organisations-Owners bereitstellen.
+   Der Owner besitzt die für Workspace-Erstellung und Run-Bestätigung nötigen
+   Rechte bereits. Keine zusätzlichen HCP-Teams, Team-Tokens oder Custom RBAC
+   konfigurieren. Der Benutzer muss die VCS-Verbindung verwenden dürfen; bei
+   GitHub-App-Anbindung seine GitHub-Verknüpfung einmalig autorisieren.
+   Organization-Tokens sind kein Ersatz: Sie können keine Runs starten.
 4. Wiederverwendbare **nicht globale** HCP-Variable-Sets einmalig einrichten:
 
    | Set | Einmalig hinterlegte Werte |
    |---|---|
-   | BTP-Trial | Terraform-String `globalaccount` (bestehende Global-Account-Subdomain); sensitive Environment-Credentials `BTP_USERNAME`/`BTP_PASSWORD` oder eine bereits unterstützte alternative Provider-Authentifizierung; sensitive `DIRECTORY_PREFLIGHT_HCP_TOKEN` des Directory-Leser-Teams |
-   | CF-Trial | sensitive Environment-Credentials `CF_USER`/`CF_PASSWORD` bzw. bestehender unterstützter Auth-Flow, ggf. `CF_ORIGIN`; sensitive `TFE_TOKEN` des Output-Leser-Teams |
+   | BTP-Trial | Terraform-String `globalaccount` (bestehende Global-Account-Subdomain); sensitive Environment-Credentials `BTP_USERNAME`/`BTP_PASSWORD` oder ein bereits unterstützter Provider-Auth-Flow; derselbe HCP-User-Token als sensitive Environment-Variable `DIRECTORY_PREFLIGHT_HCP_TOKEN` |
+   | CF-Trial | sensitive Environment-Credentials `CF_USER`/`CF_PASSWORD` bzw. bestehender unterstützter Auth-Flow, ggf. `CF_ORIGIN`; HCP-User-Token als sensitive Environment-Variable `TFE_TOKEN` für `tfe_outputs` |
 
+   Der TFE-Provider des Plattform-Workspaces verwendet den HCP-User-Token als
+   sensitive Environment-Variable `TFE_TOKEN`. Die Werte werden einmalig in den
+   sicheren Speichern hinterlegt und bei Rotation dort erneuert. Terraform
+   bindet für jedes weitere Projekt nur die Set-IDs an: kein erneutes manuelles
+   Eintragen von Zugangsdaten pro Projekt, kein Auslesen der Secret-Werte und
+   keine Secret-Erzeugung durch diesen Bootstrap-State.
    Provider-Credentials nicht zu Terraform-Inputs oder Projekt-YAML kopieren.
    Das CF-API-Ziel kommt ausschließlich aus dem validierten BTP-Handoff.
-   Die Sets nicht mit dem privilegierten Bootstrap-TFE-Token vermischen.
 5. Im Bootstrap-Workspace `account_bindings` als HCL-Map mit ausschließlich
    öffentlichen Referenz-IDs konfigurieren:
 
    ```hcl
    {
      trial = {
-       btp_variable_set_ids      = ["<varset-ID-BTP>"]
-       cf_variable_set_ids       = ["<varset-ID-CF>"]
-       directory_reader_team_id = "<team-ID-State>"
-       output_reader_team_id    = "<team-ID-Outputs>"
+       btp_variable_set_ids = ["<varset-ID-BTP>"]
+       cf_variable_set_ids  = ["<varset-ID-CF>"]
      }
    }
    ```
 
-   Der TFE-Provider des Bootstrap-Workspaces erhält einmalig ein sensitives
-   `TFE_TOKEN` mit den nötigen Workspace-/Variablen-/Set-Anbindungs-/Team-Rechten.
-   Er liest keine Credential-Werte aus Variable-Sets und erzeugt keine Tokens.
+   Es gibt keine Team-ID-Inputs oder Operator-Team-Zuordnungen. Bestehende
+   Project-ABC-Variable-Sets und Workspace-Einstellungen werden nicht verändert.
 6. Python 3 und HTTPS-Zugriff auf HCP/State-Downloads im späteren BTP-Worker
    sicherstellen. Die Directory-Prüfung blockiert andernfalls aktive Plans.
-   Verfügbarkeit der benötigten HCP-Team-/Custom-Permission-Funktionen und der
-   vorhandenen SAP-/CF-Zugriffsrechte im Plattform-Setup prüfen.
-7. Für die GitOps-Orchestrierung sichere GitHub Environments
-   `hcp-bootstrap-plan`, `hcp-project-plan`, `hcp-bootstrap-apply`,
-   `hcp-core-apply`, `hcp-cf-apply`
-   einrichten; Apply-Environments mit Reviewern und Branch-Beschränkung `main`
-   schützen. `main` mit PR-Review und erfolgreicher Landing-Zone-CI schützen.
-   Jeweils `HCP_ORCHESTRATION_TOKEN` als Environment-Secret setzen.
-   Die beiden Plan-Environments verwenden das Plan-Team-Token; die Core-/CF-
-   Apply-Environments jeweils ihr Operator-Team-Token. Für Bootstrap-Apply ein
-   eigenes, nur auf den Plattform-Workspace begrenztes Apply-Token verwenden.
-   Der anschließende Job für Projekt-Pläne benutzt wieder ausschließlich das
-   Plan-Token. Auf dem einmaligen Bootstrap-Workspace dem Plan-Team Plan-/Output-
-   Leserechte und beiden Operator-Teams nur Output-Leserechte geben: Der Run-
-   Client überprüft damit die tatsächlich verwalteten Ziel-IDs. Keine Organization-
-   Tokens für Runs verwenden; HCP erwartet User-/Team-Tokens.
+   Bestehende SAP-/CF-Zugriffsrechte einmalig prüfen; der Bootstrap vergibt keine
+   SAP-Berechtigungen und verspricht keine Trial-Kapazität.
+7. Die bestehenden GitHub Environments `hcp-bootstrap-plan`, `hcp-project-plan`,
+   `hcp-bootstrap-apply`, `hcp-core-apply` und `hcp-cf-apply` erhalten.
+   In unserem **öffentlichen Repository mit GitHub Pro** sind Required Reviewers
+   verfügbar: Apply-Environments damit und mit Branch-Beschränkung `main`
+   schützen. PR-Review und erfolgreiche Landing-Zone-CI für `main` beibehalten.
+   Den HCP-User-Token einmalig in jedem dieser Environments als geschütztes
+   Secret `HCP_ORCHESTRATION_TOKEN` hinterlegen. Die bestehenden manuellen
+   Workflow-Freigaben und separaten Bootstrap-/Core-/CF-Stufen bleiben erhalten.
+   Secret-Namen pro Stufe machen den Token nicht zu einem technisch begrenzten
+   Plan- oder Apply-Token. Die Trennung wird hier durch GitHub-Reviews,
+   Workflow-Dispatch und die Prüfung von Workspace, Run und Commit durchgesetzt.
 8. Nach Review `bootstrap_enabled=true` im Plattform-Workspace und die
    Repository-Variable `PROJECT_BOOTSTRAP_ENABLED=true` aktivieren. Beide
    Freigaben sind bewusst getrennt von den SAP-Deployment-Schaltern. Die
@@ -216,11 +201,46 @@ weder Workspace-UI-Konfiguration noch erneutes Eintragen von Credentials nötig.
 
 Neue Core-/CF-Workspaces bekommen automatisch Namen, passende Cloud-Block-Tags,
 Working Directories, Version, Remote Execution, VCS-Verbindung, Routing-Inputs
-und die passenden Set-/Operator-Anbindungen. `queue_all_runs=false` verhindert frühe
-Webhook-Runs vor fertiggestelltem Setup; die Orchestrierung startet die ersten
-Plans ausdrücklich. Ein Core erlaubt nur seinen eigenen CF-Workspaces Remote-
-State-Zugriff; weder global noch projektweit. Die CF-Provider-Tokens lesen nur
-Outputs, während die Directory-Prüfung einen separaten State-Leser benutzt.
+und Set-Anbindungen. `queue_all_runs=false` verhindert frühe Webhook-Runs vor
+fertigem Setup; die Orchestrierung startet die ersten Plans ausdrücklich.
+
+### Berechtigungsgrenze unter HCP Free
+
+User-Tokens erben die tatsächlichen Berechtigungen ihres Benutzers. Im hier
+verwendeten Owner-Modell umfasst das Lesen, Schreiben und Apply-Rechte auf
+allen Workspaces der Organisation, einschließlich Project ABC. HCP Free bietet
+für diesen Weg keine separat abgegrenzten Leser-, Plan- oder Apply-Rollen.
+Das ist eine höhere Tokenberechtigung; verschiedene Variablennamen oder die
+HTTP-Whitelist im Helfer reduzieren den API-Berechtigungsumfang nicht.
+Bei kompromittiertem Token könnten die GitHub-Freigaben über direkte API-Aufrufe
+umgangen werden. Tokens deshalb ausschließlich in geschützten Environment-
+Secrets bzw. sensitiven, nicht globalen HCP-Variable-Sets halten, nie in Git,
+YAML, CLI-Argumenten, Logs oder ungeschützten Terraform-Outputs; bei Bedarf
+widerrufen und in diesen einmaligen Speichern rotieren.
+
+Die bestehende Orchestrierung prüft trotzdem tatsächliche Bootstrap-State-IDs,
+Commit/Run/Workspace, getrennte manuelle Freigaben und Auto-Apply aus. Das
+verhindert versehentliche falsche Ziele im vorgesehenen Ablauf, ersetzt aber
+keine in HCP Free nicht vorhandene feingranulare RBAC-Grenze.
+
+### Outputs statt vollständiger State-Freigabe
+
+Alle neuen Workspaces setzen `global_remote_state=false`,
+`project_remote_state=false` und `remote_state_consumer_ids=[]`. Der Core
+gewährt auch seinen CF-Workspaces keinen vollständigen State-Zugriff.
+Der Handoff bleibt bei `data.tfe_outputs.project.nonsensitive_values` mit dem
+HCP-User-Token; es wird kein `terraform_remote_state` ergänzt. Workspace-/
+Stage-/Fingerprint-Prüfungen im CF-Root bleiben unverändert. Die bestehende
+Orchestrierung liest ihre öffentlichen Routing-IDs ebenfalls über die Outputs-
+API. Das Schreiben von Consumer-Freigaben ist dafür nicht nötig.
+
+Der Token selbst kann wegen der Owner-Rechte weiterhin mehr lesen als diese
+Outputs; das ist von einer konfigurierten Workspace-State-Freigabe zu trennen.
+Nur der obligatorische Directory-Preflight liest den tatsächlichen **eigenen**
+Core-State zum ID-Nachweis. Dieser Zugriff ist kein CF-Handoff, bleibt an den
+aktuellen Run/Workspace gebunden und wird unverändert beibehalten. Die drei
+bestehenden Project-ABC-Workspaces werden weder für diese Korrektur noch für
+neue Freigaben umkonfiguriert.
 
 ## Merge, Plan, Freigabe und Drift
 
@@ -310,8 +330,10 @@ gesonderten Auftrag offen. Testzahlen und commitbezogene CI-Nachweise stehen im 
 Primärquellen der gepinnten Versionen:
 [TFE Workspace](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/r/workspace.html.markdown),
 [Workspace Settings](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/r/workspace_settings.html.markdown),
-[Team Access](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/r/team_access.html.markdown),
 [Variable-Set-Anbindung](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/r/workspace_variable_set.html.markdown),
 [Runs-API](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run),
+[User-Token und Berechtigungen](https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens),
+[Outputs statt vollständigem State](https://developer.hashicorp.com/terraform/language/state/remote-state-data),
+[GitHub-Pro-Environments im öffentlichen Repository](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments),
 [BTP-Authentifizierung](https://github.com/SAP/terraform-provider-btp/blob/v1.27.0/docs/index.md),
 [CF-Authentifizierung](https://github.com/cloudfoundry/terraform-provider-cloudfoundry/blob/v1.18.0/docs/index.md).

@@ -255,6 +255,31 @@ class BootstrapWorkflowTests(unittest.TestCase):
         current = lock_blocks((ROOT / "HCP/bootstrap/.terraform.lock.hcl").read_text())
         self.assertEqual(current, {"registry.terraform.io/hashicorp/tfe": old["registry.terraform.io/hashicorp/tfe"]})
 
+    def test_hcp_free_bootstrap_has_no_team_or_custom_rbac_dependency(self):
+        import re
+        sources = "\n".join(p.read_text() for p in (ROOT / "HCP").rglob("*.tf"))
+        self.assertEqual(set(re.findall(r'resource "([^"]+)"', sources)), {
+            "tfe_workspace", "tfe_workspace_settings", "tfe_variable", "tfe_workspace_variable_set",
+        })
+        for removed in ["operator_teams", "directory_reader_team_id", "output_reader_team_id", "tfe_team_access"]:
+            self.assertNotIn(removed, sources)
+
+    def test_cf_handoff_still_reads_only_outputs_with_user_token_provider(self):
+        source = (ROOT / "CloudFoundry/projects/main.tf").read_text()
+        self.assertIn('data "tfe_outputs" "project"', source)
+        self.assertIn("nonsensitive_values.project_contract", source)
+        self.assertNotIn("terraform_remote_state", source)
+        self.assertIn('provider "tfe" {}', source)  # TFE_TOKEN from the attached sensitive set.
+
+    def test_existing_protected_environment_names_and_secret_route_are_preserved(self):
+        jobs = self.workflow["jobs"]
+        self.assertEqual(jobs["plan-bootstrap"]["environment"], "hcp-bootstrap-plan")
+        self.assertEqual(jobs["project-plans"]["environment"], "hcp-project-plan")
+        self.assertEqual(jobs["approve"]["environment"], "hcp-${{ inputs.phase }}-apply")
+        self.assertEqual(self.workflow["on"]["workflow_dispatch"]["inputs"]["phase"]["options"], ["bootstrap", "core", "cf"])
+        for name in ["plan-bootstrap", "project-plans", "approve"]:
+            self.assertTrue(any(step.get("env", {}).get("HCP_ORCHESTRATION_TOKEN") == "${{ secrets.HCP_ORCHESTRATION_TOKEN }}" for step in jobs[name]["steps"]))
+
 
 if __name__ == "__main__":
     unittest.main()

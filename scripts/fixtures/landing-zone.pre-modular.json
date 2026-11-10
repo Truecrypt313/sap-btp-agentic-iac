@@ -1,0 +1,640 @@
+{
+  "provenance": {
+    "base_commit": "987d93504bc9752078f2ebc4950ed5046567a49d",
+    "source_sha256": "96dac4d78932cfd3b93558e2df7990c7b8b2e6a85c173a62ac55e8de89ff1f34",
+    "terraform_version": "1.15.5",
+    "note": "Captured before splitting the unchanged main YAML; normalized independently by the existing Terraform module (console, no providers/backend/state)."
+  },
+  "raw": {
+    "schema_version": 2,
+    "account_type": "trial",
+    "project_name": "Project ABC",
+    "service_catalog": {
+      "alert_standard": {
+        "service_name": "alert-notification",
+        "plan_name": "standard",
+        "profiles": [
+          "trial",
+          "enterprise"
+        ],
+        "instance": {}
+      },
+      "feature_flags_lite": {
+        "service_name": "feature-flags",
+        "plan_name": "lite",
+        "profiles": [
+          "trial",
+          "enterprise"
+        ],
+        "instance": {}
+      },
+      "feature_flags_dashboard": {
+        "service_name": "feature-flags-dashboard",
+        "plan_name": "dashboard",
+        "profiles": [
+          "trial",
+          "enterprise"
+        ],
+        "subscription": {
+          "app_name": "feature-flags-dashboard"
+        }
+      },
+      "work_zone_standard": {
+        "service_name": "SAPLaunchpad",
+        "plan_name": "standard",
+        "profiles": [
+          "trial",
+          "enterprise"
+        ],
+        "subscription": {
+          "app_name": "SAPLaunchpad"
+        }
+      }
+    },
+    "environments": {
+      "DEV": {
+        "enabled": true,
+        "name": null,
+        "subdomain": null,
+        "description": null,
+        "region": "us10",
+        "iaas_provider": "AWS",
+        "runtime": "cloudfoundry",
+        "parent_id": null,
+        "usage": null,
+        "skip_auto_entitlement": null,
+        "costcenter": "12345",
+        "beta_enabled": true,
+        "labels": {},
+        "administrators_source": "legacy",
+        "administrators": [],
+        "administrator_options": {
+          "role_collection_name": "Subaccount Administrator",
+          "origin": null
+        },
+        "role_assignments": {},
+        "cloud_foundry": {
+          "enabled": true,
+          "plan": "trial",
+          "name": null,
+          "service_name": "cloudfoundry",
+          "environment_type": "cloudfoundry",
+          "landscape_label": "cf-us10-001",
+          "parameters": null,
+          "parameters_key": null,
+          "timeouts": null,
+          "spaces": {
+            "project": {
+              "name": "dev-project-abc",
+              "allow_ssh": null,
+              "isolation_segment": null,
+              "labels": null,
+              "annotations": null,
+              "member_origin": null,
+              "roles": {},
+              "legacy_manager": null,
+              "legacy_developer": null,
+              "managers": [],
+              "developers": []
+            }
+          }
+        },
+        "services": {
+          "alert_notification": {
+            "enabled": true,
+            "plan": "standard",
+            "instance": true
+          },
+          "feature_flags": {
+            "enabled": true,
+            "plan": "lite",
+            "instance": false,
+            "dashboard": true
+          },
+          "work_zone": {
+            "enabled": false
+          }
+        }
+      },
+      "TEST": {
+        "enabled": true,
+        "name": null,
+        "subdomain": null,
+        "description": null,
+        "region": "us10",
+        "iaas_provider": "AWS",
+        "runtime": "cloudfoundry",
+        "parent_id": null,
+        "usage": null,
+        "skip_auto_entitlement": null,
+        "costcenter": "12345",
+        "beta_enabled": true,
+        "labels": {},
+        "administrators": [],
+        "administrator_options": {
+          "role_collection_name": "Subaccount Administrator",
+          "origin": null
+        },
+        "role_assignments": {},
+        "role_collections": {
+          "feature_flags_administrator": {
+            "name": "TEST_FeatureFlags_Administrator",
+            "roles": {
+              "dashboard": {
+                "name": "Feature Flags Service dashboard Administrator",
+                "role_template_name": "FeatureFlags_Dashboard_Administrator",
+                "role_template_app_id": "feature-flags!b1765"
+              }
+            }
+          },
+          "feature_flags_auditor": {
+            "name": "TEST_FeatureFlags_Auditor",
+            "roles": {
+              "dashboard": {
+                "name": "Feature Flags Service dashboard Auditor",
+                "role_template_name": "FeatureFlags_Dashboard_Auditor",
+                "role_template_app_id": "feature-flags!b1765"
+              }
+            }
+          }
+        },
+        "cloud_foundry": {
+          "enabled": true,
+          "plan": "trial",
+          "spaces": {
+            "project": {
+              "name": "test-space-project-abc"
+            }
+          }
+        },
+        "services": {
+          "alert_notification": {
+            "enabled": true,
+            "plan": "standard",
+            "instance": true
+          },
+          "feature_flags": {
+            "enabled": true,
+            "plan": "lite",
+            "instance": false,
+            "dashboard": true
+          }
+        }
+      },
+      "PROD": {
+        "enabled": false,
+        "name": null,
+        "subdomain": null,
+        "description": null,
+        "region": "us10",
+        "iaas_provider": "AWS",
+        "runtime": "cloudfoundry",
+        "parent_id": null,
+        "usage": null,
+        "skip_auto_entitlement": null,
+        "costcenter": "12345",
+        "beta_enabled": false,
+        "cloud_foundry": {
+          "enabled": false,
+          "plan": "standard",
+          "spaces": {}
+        },
+        "services": {}
+      }
+    }
+  },
+  "normalized": {
+    "account_type": "trial",
+    "environments": {
+      "DEV": {
+        "administrator_options": {
+          "origin": null,
+          "role_collection_name": "Subaccount Administrator"
+        },
+        "administrators": [],
+        "administrators_source": "legacy",
+        "beta_enabled": true,
+        "cloud_foundry": {
+          "enabled": true,
+          "environment_type": "cloudfoundry",
+          "landscape_label": "cf-us10-001",
+          "name": null,
+          "parameters": null,
+          "parameters_key": null,
+          "plan": "trial",
+          "service_name": "cloudfoundry",
+          "spaces": {
+            "project": {
+              "allow_ssh": null,
+              "annotations": null,
+              "developers": [],
+              "isolation_segment": null,
+              "labels": null,
+              "legacy_developer": null,
+              "legacy_manager": null,
+              "managers": [],
+              "member_origin": null,
+              "name": "dev-project-abc",
+              "roles": {}
+            }
+          },
+          "timeouts": null
+        },
+        "costcenter": "12345",
+        "description": null,
+        "enabled": true,
+        "iaas_provider": "AWS",
+        "labels": {},
+        "name": null,
+        "parent_id": null,
+        "region": "us10",
+        "role_assignments": {},
+        "role_collections": {},
+        "runtime": "cloudfoundry",
+        "services": {
+          "alert_notification": {
+            "amount": null,
+            "enabled": true,
+            "instance": true,
+            "instance_options": {
+              "labels": null,
+              "name": null,
+              "parameters": null,
+              "parameters_key": null,
+              "required_platform": null,
+              "serviceplan_id": null,
+              "shared": null,
+              "timeouts": null,
+              "use_plan_names": false
+            },
+            "plan": "standard",
+            "plan_unique_identifier": null
+          },
+          "catalog": [],
+          "catalog_amounts": {},
+          "entitlements": {},
+          "feature_flags": {
+            "amount": null,
+            "dashboard": true,
+            "dashboard_amount": null,
+            "dashboard_plan_unique_identifier": null,
+            "enabled": true,
+            "instance": false,
+            "instance_options": {
+              "labels": null,
+              "name": null,
+              "parameters": null,
+              "parameters_key": null,
+              "required_platform": null,
+              "serviceplan_id": null,
+              "shared": null,
+              "timeouts": null,
+              "use_plan_names": false
+            },
+            "plan": "lite",
+            "plan_unique_identifier": null,
+            "subscription_options": {
+              "parameters": null,
+              "parameters_key": null,
+              "timeouts": null
+            }
+          },
+          "instances": {},
+          "subscriptions": {},
+          "work_zone": {
+            "amount": null,
+            "enabled": false,
+            "plan": null,
+            "plan_unique_identifier": null,
+            "subscription_options": {
+              "parameters": null,
+              "parameters_key": null,
+              "timeouts": null
+            }
+          }
+        },
+        "skip_auto_entitlement": null,
+        "subdomain": null,
+        "usage": null
+      },
+      "PROD": {
+        "administrator_options": {
+          "origin": null,
+          "role_collection_name": "Subaccount Administrator"
+        },
+        "administrators": [],
+        "administrators_source": "yaml",
+        "beta_enabled": false,
+        "cloud_foundry": {
+          "enabled": false,
+          "environment_type": "cloudfoundry",
+          "landscape_label": "",
+          "name": null,
+          "parameters": null,
+          "parameters_key": null,
+          "plan": "standard",
+          "service_name": "cloudfoundry",
+          "spaces": {},
+          "timeouts": null
+        },
+        "costcenter": "12345",
+        "description": null,
+        "enabled": false,
+        "iaas_provider": "AWS",
+        "labels": {},
+        "name": null,
+        "parent_id": null,
+        "region": "us10",
+        "role_assignments": {},
+        "role_collections": {},
+        "runtime": "cloudfoundry",
+        "services": {
+          "alert_notification": {
+            "amount": null,
+            "enabled": false,
+            "instance": true,
+            "instance_options": {
+              "labels": null,
+              "name": null,
+              "parameters": null,
+              "parameters_key": null,
+              "required_platform": null,
+              "serviceplan_id": null,
+              "shared": null,
+              "timeouts": null,
+              "use_plan_names": false
+            },
+            "plan": "standard",
+            "plan_unique_identifier": null
+          },
+          "catalog": [],
+          "catalog_amounts": {},
+          "entitlements": {},
+          "feature_flags": {
+            "amount": null,
+            "dashboard": true,
+            "dashboard_amount": null,
+            "dashboard_plan_unique_identifier": null,
+            "enabled": false,
+            "instance": true,
+            "instance_options": {
+              "labels": null,
+              "name": null,
+              "parameters": null,
+              "parameters_key": null,
+              "required_platform": null,
+              "serviceplan_id": null,
+              "shared": null,
+              "timeouts": null,
+              "use_plan_names": false
+            },
+            "plan": "lite",
+            "plan_unique_identifier": null,
+            "subscription_options": {
+              "parameters": null,
+              "parameters_key": null,
+              "timeouts": null
+            }
+          },
+          "instances": {},
+          "subscriptions": {},
+          "work_zone": {
+            "amount": null,
+            "enabled": false,
+            "plan": null,
+            "plan_unique_identifier": null,
+            "subscription_options": {
+              "parameters": null,
+              "parameters_key": null,
+              "timeouts": null
+            }
+          }
+        },
+        "skip_auto_entitlement": null,
+        "subdomain": null,
+        "usage": null
+      },
+      "TEST": {
+        "administrator_options": {
+          "origin": null,
+          "role_collection_name": "Subaccount Administrator"
+        },
+        "administrators": [],
+        "administrators_source": "yaml",
+        "beta_enabled": true,
+        "cloud_foundry": {
+          "enabled": true,
+          "environment_type": "cloudfoundry",
+          "landscape_label": "",
+          "name": null,
+          "parameters": null,
+          "parameters_key": null,
+          "plan": "trial",
+          "service_name": "cloudfoundry",
+          "spaces": {
+            "project": {
+              "allow_ssh": null,
+              "annotations": null,
+              "developers": [],
+              "isolation_segment": null,
+              "labels": null,
+              "legacy_developer": null,
+              "legacy_manager": null,
+              "managers": [],
+              "member_origin": null,
+              "name": "test-space-project-abc",
+              "roles": {}
+            }
+          },
+          "timeouts": null
+        },
+        "costcenter": "12345",
+        "description": null,
+        "enabled": true,
+        "iaas_provider": "AWS",
+        "labels": {},
+        "name": null,
+        "parent_id": null,
+        "region": "us10",
+        "role_assignments": {},
+        "role_collections": {
+          "feature_flags_administrator": {
+            "description": null,
+            "name": "TEST_FeatureFlags_Administrator",
+            "roles": {
+              "dashboard": {
+                "name": "Feature Flags Service dashboard Administrator",
+                "role_template_app_id": "feature-flags!b1765",
+                "role_template_name": "FeatureFlags_Dashboard_Administrator"
+              }
+            }
+          },
+          "feature_flags_auditor": {
+            "description": null,
+            "name": "TEST_FeatureFlags_Auditor",
+            "roles": {
+              "dashboard": {
+                "name": "Feature Flags Service dashboard Auditor",
+                "role_template_app_id": "feature-flags!b1765",
+                "role_template_name": "FeatureFlags_Dashboard_Auditor"
+              }
+            }
+          }
+        },
+        "runtime": "cloudfoundry",
+        "services": {
+          "alert_notification": {
+            "amount": null,
+            "enabled": true,
+            "instance": true,
+            "instance_options": {
+              "labels": null,
+              "name": null,
+              "parameters": null,
+              "parameters_key": null,
+              "required_platform": null,
+              "serviceplan_id": null,
+              "shared": null,
+              "timeouts": null,
+              "use_plan_names": false
+            },
+            "plan": "standard",
+            "plan_unique_identifier": null
+          },
+          "catalog": [],
+          "catalog_amounts": {},
+          "entitlements": {},
+          "feature_flags": {
+            "amount": null,
+            "dashboard": true,
+            "dashboard_amount": null,
+            "dashboard_plan_unique_identifier": null,
+            "enabled": true,
+            "instance": false,
+            "instance_options": {
+              "labels": null,
+              "name": null,
+              "parameters": null,
+              "parameters_key": null,
+              "required_platform": null,
+              "serviceplan_id": null,
+              "shared": null,
+              "timeouts": null,
+              "use_plan_names": false
+            },
+            "plan": "lite",
+            "plan_unique_identifier": null,
+            "subscription_options": {
+              "parameters": null,
+              "parameters_key": null,
+              "timeouts": null
+            }
+          },
+          "instances": {},
+          "subscriptions": {},
+          "work_zone": {
+            "amount": null,
+            "enabled": false,
+            "plan": null,
+            "plan_unique_identifier": null,
+            "subscription_options": {
+              "parameters": null,
+              "parameters_key": null,
+              "timeouts": null
+            }
+          }
+        },
+        "skip_auto_entitlement": null,
+        "subdomain": null,
+        "usage": null
+      }
+    },
+    "project_name": "Project ABC",
+    "schema_version": 2,
+    "service_catalog": {
+      "alert_standard": {
+        "amount": null,
+        "instance": {
+          "labels": null,
+          "name": null,
+          "parameters": null,
+          "parameters_key": null,
+          "required_platform": null,
+          "serviceplan_id": null,
+          "shared": null,
+          "timeouts": null,
+          "use_plan_names": false
+        },
+        "plan_name": "standard",
+        "plan_unique_identifier": null,
+        "profiles": [
+          "enterprise",
+          "trial"
+        ],
+        "service_name": "alert-notification",
+        "subscription": null
+      },
+      "feature_flags_dashboard": {
+        "amount": null,
+        "instance": null,
+        "plan_name": "dashboard",
+        "plan_unique_identifier": null,
+        "profiles": [
+          "enterprise",
+          "trial"
+        ],
+        "service_name": "feature-flags-dashboard",
+        "subscription": {
+          "app_name": "feature-flags-dashboard",
+          "parameters": null,
+          "parameters_key": null,
+          "timeouts": null
+        }
+      },
+      "feature_flags_lite": {
+        "amount": null,
+        "instance": {
+          "labels": null,
+          "name": null,
+          "parameters": null,
+          "parameters_key": null,
+          "required_platform": null,
+          "serviceplan_id": null,
+          "shared": null,
+          "timeouts": null,
+          "use_plan_names": false
+        },
+        "plan_name": "lite",
+        "plan_unique_identifier": null,
+        "profiles": [
+          "enterprise",
+          "trial"
+        ],
+        "service_name": "feature-flags",
+        "subscription": null
+      },
+      "work_zone_standard": {
+        "amount": null,
+        "instance": null,
+        "plan_name": "standard",
+        "plan_unique_identifier": null,
+        "profiles": [
+          "enterprise",
+          "trial"
+        ],
+        "service_name": "SAPLaunchpad",
+        "subscription": {
+          "app_name": "SAPLaunchpad",
+          "parameters": null,
+          "parameters_key": null,
+          "timeouts": null
+        }
+      }
+    }
+  },
+  "configuration_fingerprint": "7ad88f9a3047420366c17fe07eb5ce702a71227747de1f9a58c0704aa35564a8",
+  "handoff_fingerprints": {
+    "DEV": "444d0f16abd3373a17cdd4159c596f4ae06e585e60844cad15d4bf39bccbe879",
+    "TEST": "9d6c14dd0ff81edfcaa25e00dcaed301930770872bcbe88630cb0b2398d62ce0"
+  }
+}

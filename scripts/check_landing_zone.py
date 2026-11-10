@@ -41,6 +41,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", nargs="+", choices=[root for root, _ in ROOTS], help="Check selected roots only.")
     selected = parser.parse_args().only
+    run([sys.executable, "scripts/build_landing_zone_config.py", "--check"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/check_state_addresses.py"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/build_landing_zone_schema.py"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/export_provider_schema.py", "--check"], ROOT, os.environ, ".")
@@ -52,7 +53,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="landing-zone-check-") as temporary:
         temporary = Path(temporary)
         checkout = temporary / "project"
-        for directory in ["BTP", "CloudFoundry", "examples"]:
+        for directory in ["BTP", "CloudFoundry", "examples", "scripts/fixtures"]:
             shutil.copytree(
                 ROOT / directory,
                 checkout / directory,

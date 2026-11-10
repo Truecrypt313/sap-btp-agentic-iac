@@ -1,5 +1,11 @@
 # Modulare SAP-BTP-Landing-Zone
 
+Der folgende Architektur-/Bestandsnachweis beschreibt die ursprüngliche
+Modularisierung und deren damaligen Stand. Die aktuelle Quellenstruktur,
+der inzwischen bereitgestellte TEST-Bestand und der tägliche Build-Workflow
+stehen in [CONFIGURATION.md](CONFIGURATION.md). `BTP/landing-zone.yaml` wird
+jetzt generiert; Änderungen ausschließlich in `BTP/config/` durchführen.
+
 Die aktuelle Erweiterung auf Schema v2 und den dynamischen Katalog ist in
 [SCHEMA_CATALOG_TEMPLATE.md](SCHEMA_CATALOG_TEMPLATE.md) beschrieben.
 Die vollständigen Felder stehen in [ATTRIBUTE_REFERENCE.md](ATTRIBUTE_REFERENCE.md).

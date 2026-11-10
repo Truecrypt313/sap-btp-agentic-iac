@@ -1,0 +1,132 @@
+# Genau eine Environment-Map DEV. Nicht umbenennen: Schlüssel steuern Terraform
+# und Handoff-Routing. Bestehende DEV-Ressourcen haben historische Root-Adressen.
+DEV:
+  # Boolean, Schema-Standard true: true verwaltet die Umgebung, false kann
+  # Löschungen planen. DEV wird zusätzlich durch bestehende Preconditions geschützt.
+  enabled: true
+  # Optionale Strings; null/ausgelassen behält die bisherigen Namensableitungen.
+  # name: "DEV <project_name>"; subdomain: Stage/Projekt plus bestehende random_uuid.
+  # description: kein expliziter Wert. Subdomain/Region können Ersetzungen auslösen.
+  # UUID und State erhalten! Keine Namen aus einem neu erzeugten UUID-Wert setzen.
+  name: null
+  subdomain: null
+  description: null
+  # region: String des Live-Katalogs; null verlangt eine eindeutige Auswahl.
+  # iaas_provider: AWS/AZURE/GCP/SAP/ALI/IBM; nur Auswahl-/Validierungsprädikat.
+  # runtime: String, Standard cloudfoundry; ebenfalls Katalogprädikat.
+  region: us10
+  iaas_provider: AWS
+  runtime: cloudfoundry
+  # parent_id: UUID-String oder null für den bisherigen Parent-Kontext.
+  # usage: UNSET/NOT_USED_FOR_PRODUCTION/USED_FOR_PRODUCTION oder null.
+  # Produktive Nutzung ist nur für Enterprise-PROD zulässig.
+  # skip_auto_entitlement: optionales Boolean bei Erstellung; null bleibt null,
+  # nicht zu false umschreiben. Bestehende Provider-/Erstellungssemantik erhalten.
+  parent_id: null
+  usage: null
+  skip_auto_entitlement: null
+  # Kostenstelle: String mit genau fünf Ziffern, kein Zahlenwert.
+  # beta_enabled: Boolean, Standard false; erlaubt Beta-Funktionen im Subaccount.
+  # labels: Map von String-Listen, Standard {}; stage/costcenter reserviert,
+  # maximal acht zusätzliche Schlüssel und 63 Zeichen je Wert. Keine Secrets.
+  costcenter: "12345"
+  beta_enabled: true
+  labels: {}
+
+  # BTP-IAM: Subaccount-Berechtigungen, getrennt von CF-Org-/Space-Rollen.
+  # administrators_source: legacy oder yaml (Schema-Standard yaml).
+  # legacy liest weiterhin HCP subaccount_emergency_admins; [] entzieht hier
+  # deshalb keine bestehenden Administratorrechte. Nicht auf yaml umstellen.
+  # Jede geänderte Identität ändert den for_each-Schlüssel der historischen
+  # btp_subaccount_role_collection_assignment.emergency_administrators-Ressource.
+  administrators_source: legacy
+  administrators: []
+  # role_collection_name: String, Standard Subaccount Administrator; weitreichende
+  # Subaccount-Verwaltung. origin: Identity-Provider-Origin als String oder null.
+  # null wird an den Provider weitergegeben; keine feste IdP-Annahme daraus ableiten.
+  # Origin-Wechsel kann auf eine andere Identität zeigen und Rechte verschieben.
+  administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
+  # Map stabiler Zuweisungsschlüssel, Standard {}. role_collection_name benennt
+  # eine bestehende Collection; role_collection_key verweist auf eine im selben
+  # Environment verwaltete Collection. Genau eines davon angeben.
+  # Genau ein Subjekt: user_name, group_name ODER attribute_name + attribute_value.
+  # Gruppen/Attribute und verwaltete Collections benötigen explizite origin.
+  # origin bezeichnet einen bereits eingerichteten IdP, richtet selbst keinen ein.
+  # Änderungen erteilen/entziehen Rechte; Schlüsselwechsel ändert State-Adressen.
+  role_assignments: {}
+  # role_collections bleibt wie bisher ausgelassen (normalisiert {}).
+  # Der DEV-Root hat bereits dev_role_collections/dev_role_assignments für spätere
+  # Ergänzungen; die leeren Eingaben erzeugen dort weiterhin keine IAM-Ressourcen.
+
+  # BTP erstellt hier das CF-Environment/die Org; der separate CF-Root verwaltet
+  # Spaces und Mitgliedschaften. BTP-Administrator bedeutet nicht CF Space Manager.
+  cloud_foundry:
+    # Boolean, Standard false. Bei bestehender Org niemals ohne Plan deaktivieren.
+    enabled: true
+    # plan: String, Standard trial; Trial erfordert trial, Enterprise standard.
+    # Plan/Service/Name/Landscape können die bestehende Org ersetzen.
+    plan: trial
+    name: null
+    service_name: cloudfoundry
+    environment_type: cloudfoundry
+    # String; Standard "" verlangt eindeutige Katalogauswahl. DEV muss den
+    # bereits bereitgestellten Wert behalten. Bestandteil des Handoff-Hashes.
+    landscape_label: cf-us10-001
+    # parameters: nicht geheimer JSON-Objekt-String oder null. Bei null wird
+    # instance_name aus dem Org-Namen erzeugt. parameters_key: HCP-Referenz
+    # environment_parameters["DEV/<key>"] statt Secret im YAML; exklusiv zu parameters.
+    # timeouts: optionale Map von create/update/delete-Dauerstrings, null lässt
+    # Providerdefaults gelten. Keine neuen Providerdefaults hier vorgeben.
+    parameters: null
+    parameters_key: null
+    timeouts: null
+    spaces:
+      # project ist reserviert: bestehender cloudfoundry_space.project_space.
+      project:
+        # Pflicht-String; bestehender Name ist im DEV-Root zusätzlich abgesichert.
+        name: dev-project-abc
+        # Optionale Providerattribute: allow_ssh Boolean, isolation_segment UUID,
+        # labels/annotations Maps von Strings. null lässt den Provider entscheiden.
+        allow_ssh: null
+        isolation_segment: null
+        labels: null
+        annotations: null
+        # Origin für einfache managers/developers; DEV/project erlaubt nur null,
+        # weil die beiden historischen Rollen ihre jeweilige Origin separat haben.
+        member_origin: null
+        # Map stabiler Rollenschlüssel, Standard {}. type: space_manager,
+        # space_developer, space_auditor oder space_supporter. Genau user (UUID)
+        # ODER username (String); origin nur mit username. Space Manager verwaltet
+        # Space-Mitgliedschaften; Developer kann Anwendungen deployen/verwalten.
+        roles: {}
+        # null/ausgelassen liest cf_space_manager/cf_space_developer aus HCP.
+        # Optionale Maps: user ODER username sowie origin; nur DEV/project erlaubt.
+        # Nicht in generische Rollen überführen: die bestehenden Ressourcen
+        # cloudfoundry_space_role.space_manager/.space_developer bleiben Eigentümer.
+        legacy_manager: null
+        legacy_developer: null
+        # Listen von Benutzernamen, Standard []; für DEV/project müssen sie leer
+        # bleiben. Zusätzliche geprüfte Rollen nur über roles. Keine doppelten Bindings.
+        managers: []
+        developers: []
+
+  # Aktivierungen, getrennt von service-catalog.yaml. Standard je Komfortservice:
+  # enabled=false. Entfernen/Deaktivieren kann Entitlements, Instanzen oder
+  # Subscriptions löschen; DEV-Baseline ist zusätzlich durch Preconditions geschützt.
+  # Entitlement = Planberechtigung/Quote, instance = konkrete Serviceinstanz,
+  # dashboard = App-Subscription. Keines davon ersetzt Benutzerberechtigungen.
+  services:
+    alert_notification:
+      enabled: true
+      plan: standard
+      # Boolean, Standard true für Alert Notification; bestehende Instanz erhalten.
+      instance: true
+    feature_flags:
+      enabled: true
+      plan: lite
+      # Beide Booleans haben im Schema den Standard true. instance bleibt hier
+      # ausdrücklich false; Weglassen würde eine zusätzliche Instanz anfordern.
+      instance: false
+      dashboard: true
+    work_zone:
+      enabled: false

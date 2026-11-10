@@ -1,156 +1,161 @@
+# AUTO-GENERATED – DO NOT EDIT MANUALLY
+# Quellen: BTP/config/; Build: python scripts/build_landing_zone_config.py
 # yaml-language-server: $schema=../schemas/landing-zone.schema.json
-# Versioned desired configuration. Credentials remain in HCP/environment variables.
-schema_version: 2
 account_type: trial
-project_name: Project ABC
-# These documented aliases are definitions, not availability claims or activations.
-# Select via environments.<stage>.services.catalog; the live catalog is mandatory.
-service_catalog:
-  alert_standard:
-    service_name: alert-notification
-    plan_name: standard
-    profiles: [trial, enterprise]
-    instance: {}
-  feature_flags_lite:
-    service_name: feature-flags
-    plan_name: lite
-    profiles: [trial, enterprise]
-    instance: {}
-  feature_flags_dashboard:
-    service_name: feature-flags-dashboard
-    plan_name: dashboard
-    profiles: [trial, enterprise]
-    subscription: {app_name: feature-flags-dashboard}
-  work_zone_standard:
-    service_name: SAPLaunchpad
-    plan_name: standard
-    profiles: [trial, enterprise]
-    subscription: {app_name: SAPLaunchpad}
 environments:
   DEV:
-    enabled: true
-    # null names preserve the original UUID-based derivation and existing addresses.
-    name: null
-    subdomain: null
-    description: null
-    region: us10
-    iaas_provider: AWS # Validation predicate via btp_regions, not an API argument.
-    runtime: cloudfoundry
-    parent_id: null
-    usage: null
-    skip_auto_entitlement: null # Do not turn an omitted creation-only option into false.
-    costcenter: "12345"
-    beta_enabled: true
-    labels: {}
-    # Keep the existing HCP administrator assignment and its state key.
-    administrators_source: legacy
+    administrator_options:
+      origin: null
+      role_collection_name: Subaccount Administrator
     administrators: []
-    administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
-    role_assignments: {}
+    administrators_source: legacy
+    beta_enabled: true
     cloud_foundry:
       enabled: true
-      plan: trial
-      name: null
-      service_name: cloudfoundry
       environment_type: cloudfoundry
-      landscape_label: cf-us10-001 # Existing DEV value confirmed in the saved no-op plan.
+      landscape_label: cf-us10-001
+      name: null
       parameters: null
       parameters_key: null
-      timeouts: null
+      plan: trial
+      service_name: cloudfoundry
       spaces:
         project:
-          name: dev-project-abc
           allow_ssh: null
+          annotations: null
+          developers: []
           isolation_segment: null
           labels: null
-          annotations: null
-          member_origin: null
-          roles: {}
-          legacy_manager: null
           legacy_developer: null
-          # Existing DEV membership remains owned by CloudFoundry/main.tf.
+          legacy_manager: null
           managers: []
-          developers: []
+          member_origin: null
+          name: dev-project-abc
+          roles: {}
+      timeouts: null
+    costcenter: '12345'
+    description: null
+    enabled: true
+    iaas_provider: AWS
+    labels: {}
+    name: null
+    parent_id: null
+    region: us10
+    role_assignments: {}
+    runtime: cloudfoundry
     services:
       alert_notification:
         enabled: true
-        plan: standard
         instance: true
+        plan: standard
       feature_flags:
-        enabled: true
-        plan: lite
-        instance: false
         dashboard: true
+        enabled: true
+        instance: false
+        plan: lite
       work_zone:
         enabled: false
-  TEST:
-    enabled: true
-    # null names preserve the original UUID-based derivation and existing addresses.
-    name: null
+    skip_auto_entitlement: null
     subdomain: null
-    description: null
-    region: us10
-    iaas_provider: AWS # Validation predicate via btp_regions, not an API argument.
-    runtime: cloudfoundry
-    parent_id: null
     usage: null
-    skip_auto_entitlement: null # Do not turn an omitted creation-only option into false.
-    costcenter: "12345"
-    beta_enabled: true
-    labels: {}
+  PROD:
+    beta_enabled: false
+    cloud_foundry:
+      enabled: false
+      plan: standard
+      spaces: {}
+    costcenter: '12345'
+    description: null
+    enabled: false
+    iaas_provider: AWS
+    name: null
+    parent_id: null
+    region: us10
+    runtime: cloudfoundry
+    services: {}
+    skip_auto_entitlement: null
+    subdomain: null
+    usage: null
+  TEST:
+    administrator_options:
+      origin: null
+      role_collection_name: Subaccount Administrator
     administrators: []
-    administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
-    role_assignments: {}
-    # No users or assignments yet. Future bindings must explicitly use sap.default.
-    role_collections:
-      feature_flags_administrator:
-        name: TEST_FeatureFlags_Administrator
-        roles:
-          dashboard:
-            name: Feature Flags Service dashboard Administrator
-            role_template_name: FeatureFlags_Dashboard_Administrator
-            role_template_app_id: feature-flags!b1765
-      feature_flags_auditor:
-        name: TEST_FeatureFlags_Auditor
-        roles:
-          dashboard:
-            name: Feature Flags Service dashboard Auditor
-            role_template_name: FeatureFlags_Dashboard_Auditor
-            role_template_app_id: feature-flags!b1765
-    # Enable only the CF org; resolve its landscape from the TEST provider catalog.
+    beta_enabled: true
     cloud_foundry:
       enabled: true
       plan: trial
       spaces:
         project:
           name: test-space-project-abc
+    costcenter: '12345'
+    description: null
+    enabled: true
+    iaas_provider: AWS
+    labels: {}
+    name: null
+    parent_id: null
+    region: us10
+    role_assignments: {}
+    role_collections:
+      feature_flags_administrator:
+        name: TEST_FeatureFlags_Administrator
+        roles:
+          dashboard:
+            name: Feature Flags Service dashboard Administrator
+            role_template_app_id: feature-flags!b1765
+            role_template_name: FeatureFlags_Dashboard_Administrator
+      feature_flags_auditor:
+        name: TEST_FeatureFlags_Auditor
+        roles:
+          dashboard:
+            name: Feature Flags Service dashboard Auditor
+            role_template_app_id: feature-flags!b1765
+            role_template_name: FeatureFlags_Dashboard_Auditor
+    runtime: cloudfoundry
     services:
       alert_notification:
         enabled: true
-        plan: standard
         instance: true
+        plan: standard
       feature_flags:
-        enabled: true
-        plan: lite
-        instance: false
         dashboard: true
-  PROD:
-    # Trial is for personal evaluation, never a production deployment.
-    enabled: false
-    # null names preserve the original UUID-based derivation and existing addresses.
-    name: null
+        enabled: true
+        instance: false
+        plan: lite
+    skip_auto_entitlement: null
     subdomain: null
-    description: null
-    region: us10
-    iaas_provider: AWS # Validation predicate via btp_regions, not an API argument.
-    runtime: cloudfoundry
-    parent_id: null
     usage: null
-    skip_auto_entitlement: null # Do not turn an omitted creation-only option into false.
-    costcenter: "12345"
-    beta_enabled: false
-    cloud_foundry:
-      enabled: false
-      plan: standard
-      spaces: {}
-    services: {}
+project_name: Project ABC
+schema_version: 2
+service_catalog:
+  alert_standard:
+    instance: {}
+    plan_name: standard
+    profiles:
+    - trial
+    - enterprise
+    service_name: alert-notification
+  feature_flags_dashboard:
+    plan_name: dashboard
+    profiles:
+    - trial
+    - enterprise
+    service_name: feature-flags-dashboard
+    subscription:
+      app_name: feature-flags-dashboard
+  feature_flags_lite:
+    instance: {}
+    plan_name: lite
+    profiles:
+    - trial
+    - enterprise
+    service_name: feature-flags
+  work_zone_standard:
+    plan_name: standard
+    profiles:
+    - trial
+    - enterprise
+    service_name: SAPLaunchpad
+    subscription:
+      app_name: SAPLaunchpad

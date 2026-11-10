@@ -46,7 +46,7 @@ class CIContractTests(unittest.TestCase):
         self.assertEqual(workflow_errors(self.workflow), [])
         source = (ROOT / ".github/workflows/landing-zone-ci.yml").read_text()
         self.assertNotIn("secrets.", source)
-        for command in ["check_repository.py", "run_secret_scan.py", "check_landing_zone.py", "export_provider_schema.py --refresh --check"]:
+        for command in ["check_repository.py", "run_secret_scan.py", "check_landing_zone.py", "build_landing_zone_config.py --check", "export_provider_schema.py --refresh --check"]:
             self.assertIn(command, source)
 
     def test_reject_ci_path_filter_regression(self):

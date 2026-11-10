@@ -1,0 +1,16 @@
+# Reservierter Einstiegspunkt für künftige zentrale IAM-Governance.
+# NICHT AKTIV: Der Builder liest diese Datei nicht; Terraform erhält sie nicht.
+# Diese Map hat bewusst noch kein aktives Terraform-/Governance-Schema.
+# Keine Standardrechte, Verbote, Freigaben oder KI-Entscheidungen daraus ableiten.
+#
+# Geplante Betrachtung aller Umgebungen DEV, TEST und PROD:
+# - BTP: Rollen-Discovery, Role Collections, Benutzer-/Gruppenzuweisungen und IdP.
+# - Cloud Foundry: eigenständige Org-/Space-Rollen und Mitgliedschaften.
+# - Least Privilege, kritische Adminrollen und Separation of Duties.
+# - Zulässige Rollenkombinationen sowie Prüf- und Freigabeanforderungen.
+# - KI-Empfehlungen als überprüfbare Vorschläge mit kontrollierten Terraform-Plänen.
+#
+# Zukünftige Aktivierung benötigt ein separates Schema, Validatoren und Review.
+# Bestehende Zuweisungen/State-Adressen erhalten; kein automatischer Rechteentzug.
+# Keine Benutzerlisten, Tokens, Passwörter oder anderen Secrets hier ablegen.
+policies: {}

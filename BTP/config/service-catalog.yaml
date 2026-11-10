@@ -1,0 +1,42 @@
+# Wiederverwendbare Definitionen, keine Aktivierungen und keine Verfügbarkeitszusage.
+# Aktivierung erfolgt in environments/<stage>.yaml unter services: entweder über
+# bestehende Komfortfelder oder services.catalog (Liste der Alias-Strings).
+# Tatsächliche Verfügbarkeit prüft weiterhin der Live-BTP-Katalog in Terraform.
+# Alias-Schlüssel stabil halten; sie können Teil von for_each-Ressourcenadressen sein.
+service_catalog:
+  # service_name und plan_name: exakte Strings des BTP-Katalogs, beide Pflicht.
+  # profiles: Liste zulässiger Account-Profile (trial/enterprise); Standard im
+  # bestehenden Schema ist [trial, enterprise]. Kein automatischer Planwechsel.
+  alert_standard:
+    service_name: alert-notification
+    plan_name: standard
+    profiles: [trial, enterprise]
+    # instance: optionale Map; {} fordert bei Alias-Aktivierung eine Instanz
+    # mit den Moduldefaults an, null/ausgelassen definiert keine Instanz.
+    # Optional: name (String), shared/use_plan_names (Boolean), labels (Map),
+    # serviceplan_id/required_platform (String), timeouts (create/update/delete).
+    # parameters: nicht geheimes JSON-Objekt als String ODER parameters_key als
+    # Laufzeitreferenz in HCP instance_parameters["STAGE/<key>"]. Nie beides setzen.
+    # Quoten optional als amount (Ganzzahl >= 1); plan_unique_identifier ist
+    # optionaler String. Änderungen können Entitlements/Instanzen beeinflussen.
+    instance: {}
+  feature_flags_lite:
+    service_name: feature-flags
+    plan_name: lite
+    profiles: [trial, enterprise]
+    instance: {}
+  feature_flags_dashboard:
+    service_name: feature-flags-dashboard
+    plan_name: dashboard
+    profiles: [trial, enterprise]
+    # subscription: optionale Map; app_name muss zum Katalog passen.
+    # Weglassen/null erzeugt keine Subscription über diesen Alias.
+    # Optional parameters/parameters_key und timeouts wie bei Instanzen;
+    # geheime Subscription-Parameter ausschließlich in HCP subscription_parameters.
+    # Eine Subscription gewährt nicht automatisch Benutzern eine IAM-Rolle.
+    subscription: {app_name: feature-flags-dashboard}
+  work_zone_standard:
+    service_name: SAPLaunchpad
+    plan_name: standard
+    profiles: [trial, enterprise]
+    subscription: {app_name: SAPLaunchpad}

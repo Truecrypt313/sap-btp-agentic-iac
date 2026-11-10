@@ -1,0 +1,7 @@
+# Nur DEFAULT: keine eigene Quotenverwaltung oder Directory-IAM anfordern.
+# enabled später nur nach Plan-Freigabe ändern; nach Erstellung true beibehalten.
+directory:
+  enabled: false
+  name: Template
+  description: Vorbereitetes Projekt Template
+  features: [DEFAULT]

@@ -36,3 +36,6 @@ terraform.rc
 # Local Python validation artifacts
 __pycache__/
 *.py[cod]
+
+# Lokale Serialisierung der deterministischen Projektvorbereitung
+/.project-bootstrap.lock

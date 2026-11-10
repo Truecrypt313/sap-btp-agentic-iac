@@ -1,0 +1,17 @@
+# Bearbeitbare Projektquelle; automatisch vorbereitet, keine Bereitstellung.
+# Bootstrap-Auftragsbeleg: ursprüngliche Absicht für HCP, keine SAP-Aktivierung.
+# Listen und Spaces werden kanonisch sortiert. Identische Wiederholung überschreibt nichts.
+account_profile: trial
+cf_environments:
+- DEV
+- TEST
+directory_name: Test_Neu
+environments:
+- DEV
+- TEST
+project_id: test-neu
+project_name: Test Neu
+schema_version: 1
+spaces:
+  DEV: []
+  TEST: []

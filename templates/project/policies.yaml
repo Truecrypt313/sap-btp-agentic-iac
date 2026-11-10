@@ -1,0 +1,3 @@
+# Reservierter, inaktiver Governance-Einstieg. Keine Regeln erzwingen.
+# BTP-IAM und CF-Org-/Space-Rollen werden später getrennt geprüft.
+policies: {}

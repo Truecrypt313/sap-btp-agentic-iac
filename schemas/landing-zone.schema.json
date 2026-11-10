@@ -630,8 +630,29 @@
                   "type": "object",
                   "properties": {
                     "role_collection_name": {
-                      "type": "string",
-                      "minLength": 1
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "role_collection_key": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Key of a role collection managed in the same environment; requires explicit origin."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
                     },
                     "user_name": {
                       "anyOf": [
@@ -696,9 +717,6 @@
                     }
                   },
                   "additionalProperties": false,
-                  "required": [
-                    "role_collection_name"
-                  ],
                   "oneOf": [
                     {
                       "required": [
@@ -766,6 +784,105 @@
                         }
                       }
                     }
+                  ],
+                  "allOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "required": [
+                            "role_collection_name"
+                          ],
+                          "properties": {
+                            "role_collection_name": {
+                              "type": "string"
+                            },
+                            "role_collection_key": {
+                              "type": "null"
+                            }
+                          }
+                        },
+                        {
+                          "required": [
+                            "role_collection_key",
+                            "origin"
+                          ],
+                          "properties": {
+                            "role_collection_key": {
+                              "type": "string"
+                            },
+                            "role_collection_name": {
+                              "type": "null"
+                            },
+                            "origin": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": {}
+          },
+          "role_collections": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "description": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "roles": {
+                      "type": "object",
+                      "minProperties": 1,
+                      "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role_template_name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "role_template_app_id": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "name",
+                          "role_template_name",
+                          "role_template_app_id"
+                        ]
+                      }
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "name",
+                    "roles"
                   ]
                 }
               },

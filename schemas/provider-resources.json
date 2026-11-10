@@ -378,6 +378,69 @@
             "description_kind": "markdown"
           }
         },
+        "btp_subaccount_role_collection": {
+          "version": 0,
+          "block": {
+            "attributes": {
+              "description": {
+                "type": "string",
+                "description": "The description of the role collection.",
+                "description_kind": "markdown",
+                "optional": true,
+                "computed": true
+              },
+              "id": {
+                "type": "string",
+                "description": "The combined unique ID of the role collection as used for import operations.",
+                "description_kind": "markdown",
+                "deprecated": true,
+                "deprecation_message": "Use the `subaccount_id` and `name` attributes instead",
+                "computed": true
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the role collection.",
+                "description_kind": "markdown",
+                "required": true
+              },
+              "roles": {
+                "nested_type": {
+                  "attributes": {
+                    "name": {
+                      "type": "string",
+                      "description": "The name of the referenced role.",
+                      "description_kind": "markdown",
+                      "required": true
+                    },
+                    "role_template_app_id": {
+                      "type": "string",
+                      "description": "The name of the referenced template app id.",
+                      "description_kind": "markdown",
+                      "required": true
+                    },
+                    "role_template_name": {
+                      "type": "string",
+                      "description": "The name of the referenced role template.",
+                      "description_kind": "markdown",
+                      "required": true
+                    }
+                  },
+                  "nesting_mode": "set"
+                },
+                "description_kind": "plain",
+                "required": true
+              },
+              "subaccount_id": {
+                "type": "string",
+                "description": "The ID of the subaccount.",
+                "description_kind": "markdown",
+                "required": true
+              }
+            },
+            "description": "Creates a role collection in a subaccount.\n\n__Tip__\nYou must be assigned to the admin role of the subaccount.\n\n__Further documentation:__\n<https://help.sap.com/docs/btp/sap-business-technology-platform/role-collections-and-roles-in-global-accounts-directories-and-subaccounts>",
+            "description_kind": "markdown"
+          }
+        },
         "btp_subaccount_role_collection_assignment": {
           "version": 0,
           "block": {
@@ -1583,6 +1646,164 @@
               }
             },
             "description": "Gets details about a specific subaccount role collection.\n\n__Tip:__\nYou must be assigned to the admin or viewer role of the subaccount.",
+            "description_kind": "markdown"
+          }
+        },
+        "btp_subaccount_roles": {
+          "version": 0,
+          "block": {
+            "attributes": {
+              "id": {
+                "type": "string",
+                "description": "The ID of the subaccount.",
+                "description_kind": "markdown",
+                "deprecated": true,
+                "deprecation_message": "Use the `subaccount_id` attribute instead",
+                "computed": true
+              },
+              "subaccount_id": {
+                "type": "string",
+                "description": "The ID of the subaccount.",
+                "description_kind": "markdown",
+                "required": true
+              },
+              "values": {
+                "nested_type": {
+                  "attributes": {
+                    "app_id": {
+                      "type": "string",
+                      "description": "The id of the application that provides the role template and the role.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "app_name": {
+                      "type": "string",
+                      "description": "The name of the application that provides the role template and the role.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "attribute_list": {
+                      "nested_type": {
+                        "attributes": {
+                          "attribute_name": {
+                            "type": "string",
+                            "description": "The name of the role attribute.",
+                            "description_kind": "markdown",
+                            "computed": true
+                          },
+                          "attribute_value_origin": {
+                            "type": "string",
+                            "description": "The origin of the attribute value.",
+                            "description_kind": "markdown",
+                            "computed": true
+                          },
+                          "attribute_values": {
+                            "type": [
+                              "set",
+                              "string"
+                            ],
+                            "description_kind": "plain",
+                            "computed": true
+                          },
+                          "value_required": {
+                            "type": "bool",
+                            "description": "Shows whether the value is required.",
+                            "description_kind": "markdown",
+                            "computed": true
+                          }
+                        },
+                        "nesting_mode": "list"
+                      },
+                      "description": "The attributes assigned to this role.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "The description of the role.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The name of the role.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "read_only": {
+                      "type": "bool",
+                      "description": "Shows whether the role can be modified or not.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "role_template_name": {
+                      "type": "string",
+                      "description": "The name of the role template.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "scopes": {
+                      "nested_type": {
+                        "attributes": {
+                          "custom_grant_as_authority_to_apps": {
+                            "type": [
+                              "set",
+                              "string"
+                            ],
+                            "description_kind": "plain",
+                            "computed": true
+                          },
+                          "custom_granted_apps": {
+                            "type": [
+                              "set",
+                              "string"
+                            ],
+                            "description_kind": "plain",
+                            "computed": true
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "The description of the scope.",
+                            "description_kind": "markdown",
+                            "computed": true
+                          },
+                          "grant_as_authority_to_apps": {
+                            "type": [
+                              "set",
+                              "string"
+                            ],
+                            "description_kind": "plain",
+                            "computed": true
+                          },
+                          "granted_apps": {
+                            "type": [
+                              "set",
+                              "string"
+                            ],
+                            "description_kind": "plain",
+                            "computed": true
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "The name of the scope.",
+                            "description_kind": "markdown",
+                            "computed": true
+                          }
+                        },
+                        "nesting_mode": "list"
+                      },
+                      "description": "The scopes available with this role.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    }
+                  },
+                  "nesting_mode": "list"
+                },
+                "description_kind": "plain",
+                "computed": true
+              }
+            },
+            "description": "Gets all roles.\n\n__Tip:__\nYou must be assigned to the admin or viewer role of the subaccount.\n\n__Further documentation:__\n<https://help.sap.com/docs/btp/sap-business-technology-platform/role-collections-and-roles-in-global-accounts-directories-and-subaccounts>",
             "description_kind": "markdown"
           }
         },

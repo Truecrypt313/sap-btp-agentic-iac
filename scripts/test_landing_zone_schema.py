@@ -91,6 +91,57 @@ class ConfigurationTests(unittest.TestCase):
     def test_dev_project_rejects_unused_member_origin(self):
         self.reject(lambda c: c["environments"]["DEV"]["cloud_foundry"]["spaces"]["project"].update(member_origin="idp"))
 
+    def test_test_collections_are_least_privilege_and_unassigned(self):
+        env = self.config["environments"]["TEST"]
+        collections = env["role_collections"]
+        self.assertEqual(set(collections), {"feature_flags_administrator", "feature_flags_auditor"})
+        for key, suffix in [("feature_flags_administrator", "Administrator"), ("feature_flags_auditor", "Auditor")]:
+            collection = collections[key]
+            self.assertEqual(collection["name"], "TEST_FeatureFlags_" + suffix)
+            self.assertEqual(list(collection["roles"].values()), [{
+                "name": "Feature Flags Service dashboard " + suffix,
+                "role_template_name": "FeatureFlags_Dashboard_" + suffix,
+                "role_template_app_id": "feature-flags!b1765",
+            }])
+        self.assertEqual(env["role_assignments"], {})
+        self.assertEqual(env["administrators"], [])
+        for stage in ["DEV", "PROD"]:
+            self.assertEqual(self.config["environments"][stage].get("role_collections", {}), {})
+
+    def test_managed_assignment_requires_explicit_origin_and_valid_key(self):
+        env = self.config["environments"]["TEST"]
+        assignment = {"role_collection_key": "feature_flags_auditor", "user_name": "reader@example.invalid", "origin": "sap.default"}
+        env["role_assignments"] = {"reader": assignment}
+        self.assertFalse(validate_document(self.config))
+        del assignment["origin"]
+        self.assertTrue(validate_document(self.config))
+        assignment.update(origin="sap.default", role_collection_key="missing")
+        self.assertTrue(validate_document(self.config))
+
+    def test_collection_selectors_are_exclusive(self):
+        self.reject(lambda c: c["environments"]["TEST"]["role_assignments"].update(
+            reader={"role_collection_name": "Existing", "role_collection_key": "feature_flags_auditor", "user_name": "reader", "origin": "sap.default"}))
+
+    def test_managed_name_requires_key_to_preserve_dependency(self):
+        self.reject(lambda c: c["environments"]["TEST"]["role_assignments"].update(
+            reader={"role_collection_name": "TEST_FeatureFlags_Auditor", "user_name": "reader", "origin": "sap.default"}))
+
+    def test_duplicate_collection_names(self):
+        self.reject(lambda c: c["environments"]["TEST"]["role_collections"]["feature_flags_auditor"].update(name="TEST_FeatureFlags_Administrator"))
+
+    def test_empty_collection_roles(self):
+        self.reject(lambda c: c["environments"]["TEST"]["role_collections"]["feature_flags_auditor"].update(roles={}))
+
+    def test_duplicate_roles_in_collection(self):
+        collection = self.config["environments"]["TEST"]["role_collections"]["feature_flags_auditor"]
+        collection["roles"]["duplicate"] = deepcopy(collection["roles"]["dashboard"])
+        self.assertTrue(validate_document(self.config))
+
+    def test_collection_requires_complete_role_identity(self):
+        role = self.config["environments"]["TEST"]["role_collections"]["feature_flags_auditor"]["roles"]["dashboard"]
+        del role["role_template_app_id"]
+        self.assertTrue(validate_document(self.config))
+
     def test_generated_json_schema_is_valid(self):
         import json
         from jsonschema import Draft202012Validator

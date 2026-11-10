@@ -101,6 +101,22 @@ environments:
     administrators: []
     administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
     role_assignments: {}
+    # No users or assignments yet. Future bindings must explicitly use sap.default.
+    role_collections:
+      feature_flags_administrator:
+        name: TEST_FeatureFlags_Administrator
+        roles:
+          dashboard:
+            name: Feature Flags Service dashboard Administrator
+            role_template_name: FeatureFlags_Dashboard_Administrator
+            role_template_app_id: feature-flags!b1765
+      feature_flags_auditor:
+        name: TEST_FeatureFlags_Auditor
+        roles:
+          dashboard:
+            name: Feature Flags Service dashboard Auditor
+            role_template_name: FeatureFlags_Dashboard_Auditor
+            role_template_app_id: feature-flags!b1765
     # Enable only the CF org; resolve its landscape from the TEST provider catalog.
     cloud_foundry:
       enabled: true

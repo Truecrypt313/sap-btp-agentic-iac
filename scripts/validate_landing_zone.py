@@ -80,7 +80,18 @@ def validate_document(document):
         for values in env["labels"].values():
             if any(len(value) > 63 for value in values):
                 errors.append("environments.*.labels: value exceeds 63 characters")
+        collections = env["role_collections"]
+        collection_names = [collection["name"] for collection in collections.values()]
+        if len(set(collection_names)) != len(collection_names):
+            errors.append("environments.*.role_collections: duplicate collection name")
+        for collection in collections.values():
+            identities = [tuple(role[k] for k in ("name", "role_template_name", "role_template_app_id")) for role in collection["roles"].values()]
+            if not collection["name"].strip() or len(set(identities)) != len(identities) or any(not value.strip() for role in identities for value in role):
+                errors.append("environments.*.role_collections: blank names or duplicate roles")
         for role in env["role_assignments"].values():
+            key, name = role["role_collection_key"], role["role_collection_name"]
+            if (key is None) == (name is None) or (key is not None and (key not in collections or role["origin"] is None)) or name in collection_names:
+                errors.append("environments.*.role_assignments: use one external name or a managed key with explicit origin")
             subjects = [role["user_name"], role["group_name"], role["attribute_name"]]
             if sum(v is not None for v in subjects) != 1 or (
                 role["group_name"] is not None and role["origin"] is None

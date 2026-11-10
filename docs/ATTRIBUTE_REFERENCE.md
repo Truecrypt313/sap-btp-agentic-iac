@@ -80,6 +80,21 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 | timeouts.update | "string" | Optional | environments.*.cloud_foundry.timeouts.update | Zeitlimit; zu kleine Werte können Timeouts verursachen, ändern keine State-Adresse. |
 | type | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The last provisioning operation on the environment instance. Possible values are:  |
 
+## btp_subaccount_role_collection
+
+[Versionierte Primärquelle](https://github.com/SAP/terraform-provider-btp/blob/v1.27.0/btp/provider/resource_subaccount_role_collection.go)
+
+| Attribut | Typ | Status | YAML/Quelle | Werte, Abhängigkeiten und Risiko |
+|---|---|---|---|---|
+| description | "string" | Optional, computed | role_collections.*.description | Provider-/API-Plan prüfen. |
+| id | "string" | Nur gelesen, computed, deprecated | Provider-Ausgabe | Nicht als Input erlaubt. The combined unique ID of the role collection as used for import operations. |
+| name | "string" | Pflicht | role_collections.*.name | Eindeutig je Subaccount; stabile YAML-Schlüssel. Vorhandene Collections nicht doppelt anlegen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| roles | {"object": {"name": "string", "role_template_app_id": "string", "role_template_name": "string"}} | Pflicht | role_collections.*.roles.* | Mindestens eine Rolle; jedes Tripel muss im SAP-Katalog eindeutig existieren und erforderliche Attribute müssen belegt sein. |
+| roles.name | "string" | Pflicht | role_collections.*.roles.*.name | Teil der exakten Rollenidentität; gegen den SAP-Rollenkatalog geprüft. |
+| roles.role_template_app_id | "string" | Pflicht | role_collections.*.roles.*.role_template_app_id | Teil der exakten Rollenidentität; gegen den SAP-Rollenkatalog geprüft. |
+| roles.role_template_name | "string" | Pflicht | role_collections.*.roles.*.role_template_name | Teil der exakten Rollenidentität; gegen den SAP-Rollenkatalog geprüft. |
+| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+
 ## btp_subaccount_role_collection_assignment
 
 [Versionierte Primärquelle](https://github.com/SAP/terraform-provider-btp/blob/v1.27.0/btp/provider/resource_subaccount_role_collection_assignment.go)
@@ -88,10 +103,10 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 |---|---|---|---|---|
 | attribute_name | "string" | Optional | role_assignments.*.attribute_name | Benötigt attribute_value und origin. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
 | attribute_value | "string" | Optional | role_assignments.*.attribute_value | Benötigt attribute_name. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| group_name | "string" | Optional | role_assignments.*.group_name | Benötigt origin; bestehende Role Collection wird gelesen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| group_name | "string" | Optional | role_assignments.*.group_name | Benötigt origin; externe Collection wird gelesen, verwaltete Collection per Schlüssel referenziert. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
 | id | "string" | Nur gelesen, computed, deprecated | Provider-Ausgabe | Nicht als Input erlaubt. The combined unique ID of the role collection. |
 | origin | "string" | Optional, computed | administrator_options.origin / role_assignments.*.origin | Providerdefault ldap; null erhält Legacy-Verhalten. Custom-IdP nur ausdrücklich wählen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| role_collection_name | "string" | Pflicht | administrator_options.role_collection_name / role_assignments.*.role_collection_name | Nicht leer; muss bereits existieren. Das Template erstellt keine Role Collection. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| role_collection_name | "string" | Pflicht | administrator_options.role_collection_name / role_assignments.*.role_collection_name / role_collection_key als Ressourcenreferenz | Externer Name oder role_collection_key einer verwalteten Collection; genau eine Quelle. Neue verwaltete Bindungen benötigen expliziten origin. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
 | subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
 | user_name | "string" | Optional | administrators / bestehender DEV-HCP-Input / role_assignments.*.user_name | Genau eines von user_name/group_name/attribute_name; 1–256 Zeichen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
 
@@ -258,12 +273,22 @@ zusätzlich im maschinenlesbaren JSON Schema enthalten.
 | environments.*.administrator_options.origin | string | nein | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
 | environments.*.role_assignments | map | nein | {} | Stabile Schlüssel; Entfernen bereits verwalteter Schlüssel kann Löschungen planen. |
 | environments.*.role_assignments.* | object | nein | null | Optionales Konfigurationsobjekt; Pflichtfelder/Abhängigkeiten siehe untergeordnete Pfade. |
-| environments.*.role_assignments.*.role_collection_name | string | ja | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
+| environments.*.role_assignments.*.role_collection_name | string | nein | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
+| environments.*.role_assignments.*.role_collection_key | string | nein | null | Key of a role collection managed in the same environment; requires explicit origin.minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
 | environments.*.role_assignments.*.user_name | string | nein | null | minLength=1; maxLength=256; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
 | environments.*.role_assignments.*.group_name | string | nein | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
 | environments.*.role_assignments.*.attribute_name | string | nein | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
 | environments.*.role_assignments.*.attribute_value | string | nein | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
 | environments.*.role_assignments.*.origin | string | nein | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
+| environments.*.role_collections | map | nein | {} | Stabile Schlüssel; Entfernen bereits verwalteter Schlüssel kann Löschungen planen. |
+| environments.*.role_collections.* | object | nein | null | Optionales Konfigurationsobjekt; Pflichtfelder/Abhängigkeiten siehe untergeordnete Pfade. |
+| environments.*.role_collections.*.name | string | ja | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
+| environments.*.role_collections.*.description | string | nein | null | Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
+| environments.*.role_collections.*.roles | map | ja | null | Stabile Schlüssel; Entfernen bereits verwalteter Schlüssel kann Löschungen planen. |
+| environments.*.role_collections.*.roles.* | object | nein | null | Optionales Konfigurationsobjekt; Pflichtfelder/Abhängigkeiten siehe untergeordnete Pfade. |
+| environments.*.role_collections.*.roles.*.name | string | ja | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
+| environments.*.role_collections.*.roles.*.role_template_name | string | ja | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
+| environments.*.role_collections.*.roles.*.role_template_app_id | string | ja | null | minLength=1; Berechtigungsänderung; Subjekt-Kombination und vorhandene Mitgliedschaft prüfen. |
 | environments.*.cloud_foundry | object | nein | {} | Optionales Konfigurationsobjekt; Pflichtfelder/Abhängigkeiten siehe untergeordnete Pfade. |
 | environments.*.cloud_foundry.enabled | bool | nein | false | Nach Katalog-/Schema-Prüfung gilt der konkrete Provider-/API-Plan. |
 | environments.*.cloud_foundry.name | string | nein | null | Nach Katalog-/Schema-Prüfung gilt der konkrete Provider-/API-Plan. |
@@ -405,10 +430,11 @@ zusätzlich im maschinenlesbaren JSON Schema enthalten.
 
 ## Grenzen der Abdeckung
 
-- Alle beschreibbaren Attribute der acht implementierten Ressourcentypen sind direkt oder abgeleitet verbunden.
+- Alle beschreibbaren Attribute der neun implementierten Ressourcentypen sind direkt oder abgeleitet verbunden.
 - Berechnete Felder wie CF-Environment-custom_labels, Space.quota, IDs, Zeitstempel und Status sind keine YAML-Eingaben.
 - Eine CF-Space-Quota braucht eine eigene Ressource; hier wird keine Schreibfähigkeit erfunden.
 - Broker-Parameterschemas werden nicht vollständig lokal ausgeführt. Die API prüft dienstspezifische Semantik.
-- Role Collections, Org-Mitgliedschaften, Isolation-Segment-Entitlements, Service-Bindings und Apps werden nicht erstellt.
+- Role Collections werden explizit über YAML verwaltet; Zuweisungen sind davon getrennt und standardmäßig leer.
+- Org-Mitgliedschaften, Isolation-Segment-Entitlements, Service-Bindings und Apps werden nicht erstellt.
 - Diese Momentaufnahme ist kein Live-Verfügbarkeits- oder Quotenbeweis. Neue Subaccount-Kataloge sind erst nach deren Existenz lesbar.
 - Alle Schema-Beschreibungen stammen aus den jeweiligen SAP-/Cloud-Foundry-Providern (Apache-2.0); Quellen siehe oben.

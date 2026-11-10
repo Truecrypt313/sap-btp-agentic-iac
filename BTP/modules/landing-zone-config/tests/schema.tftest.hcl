@@ -284,3 +284,63 @@ run "test_identity_change_preserves_dev_handoff" {
     error_message = "A TEST identity change must invalidate only the TEST handoff, preserving the published DEV identity."
   }
 }
+
+run "reject_unknown_managed_collection" {
+  command = plan
+  variables {
+    configuration = merge(run.current_trial_configuration.configuration, {
+      environments = merge(run.current_trial_configuration.configuration.environments, {
+        TEST = merge(run.current_trial_configuration.configuration.environments.TEST, { role_assignments = { reader = { role_collection_key = "missing", user_name = "reader@example.invalid", origin = "sap.default" } } })
+      })
+    })
+  }
+  expect_failures = [var.configuration]
+}
+
+run "reject_managed_collection_without_origin" {
+  command = plan
+  variables {
+    configuration = merge(run.current_trial_configuration.configuration, {
+      environments = merge(run.current_trial_configuration.configuration.environments, {
+        TEST = merge(run.current_trial_configuration.configuration.environments.TEST, { role_assignments = { reader = { role_collection_key = "feature_flags_auditor", user_name = "reader@example.invalid" } } })
+      })
+    })
+  }
+  expect_failures = [var.configuration]
+}
+
+run "reject_managed_collection_with_external_name" {
+  command = plan
+  variables {
+    configuration = merge(run.current_trial_configuration.configuration, {
+      environments = merge(run.current_trial_configuration.configuration.environments, {
+        TEST = merge(run.current_trial_configuration.configuration.environments.TEST, { role_assignments = { reader = { role_collection_name = "TEST_FeatureFlags_Auditor", user_name = "reader@example.invalid", origin = "sap.default" } } })
+      })
+    })
+  }
+  expect_failures = [var.configuration]
+}
+
+run "reject_duplicate_collection_names" {
+  command = plan
+  variables {
+    configuration = merge(run.current_trial_configuration.configuration, {
+      environments = merge(run.current_trial_configuration.configuration.environments, {
+        TEST = merge(run.current_trial_configuration.configuration.environments.TEST, { role_collections = merge(run.current_trial_configuration.configuration.environments.TEST.role_collections, { duplicate = run.current_trial_configuration.configuration.environments.TEST.role_collections.feature_flags_auditor }) })
+      })
+    })
+  }
+  expect_failures = [var.configuration]
+}
+
+run "reject_empty_role_collection" {
+  command = plan
+  variables {
+    configuration = merge(run.current_trial_configuration.configuration, {
+      environments = merge(run.current_trial_configuration.configuration.environments, {
+        TEST = merge(run.current_trial_configuration.configuration.environments.TEST, { role_collections = { empty = { name = "Empty", roles = {} } } })
+      })
+    })
+  }
+  expect_failures = [var.configuration]
+}

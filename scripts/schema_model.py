@@ -60,12 +60,22 @@ SUBSCRIPTION = obj({
     "plan_name": field(required=True),
 })
 BTP_ROLE = obj({
-    "role_collection_name": field(required=True, minLength=1),
+    "role_collection_name": field(minLength=1),
+    "role_collection_key": field(minLength=1, description="Key of a role collection managed in the same environment; requires explicit origin."),
     "user_name": field(minLength=1, maxLength=256),
     "group_name": field(minLength=1),
     "attribute_name": field(minLength=1),
     "attribute_value": field(minLength=1),
     "origin": field(minLength=1),
+})
+ROLE_COLLECTION = obj({
+    "name": field(required=True, minLength=1),
+    "description": field(),
+    "roles": mapping(obj({
+        "name": field(required=True, minLength=1),
+        "role_template_name": field(required=True, minLength=1),
+        "role_template_app_id": field(required=True, minLength=1),
+    }), required=True, minProperties=1),
 })
 CF_ROLE = obj({
     "type": field(required=True, enum=["space_manager", "space_developer", "space_auditor", "space_supporter"]),
@@ -145,6 +155,7 @@ ENVIRONMENT = obj({
         "origin": field(minLength=1),
     }, default={}),
     "role_assignments": mapping(BTP_ROLE, default={}),
+    "role_collections": mapping(ROLE_COLLECTION, default={}),
     "cloud_foundry": obj({
         "enabled": field("bool", default=False),
         "name": field(),
@@ -190,7 +201,7 @@ def json_schema(node):
     result = {"type": types[kind]}
     if node.get("integer"):
         result["type"] = "integer"
-    for key in ["enum", "pattern", "format", "minimum", "maximum", "minLength", "maxLength", "maxProperties"]:
+    for key in ["enum", "pattern", "format", "minimum", "maximum", "minLength", "maxLength", "minProperties", "maxProperties"]:
         if key in node:
             result[key] = node[key]
     if node["description"]:
@@ -212,6 +223,11 @@ def json_schema(node):
                 {"required":["group_name","origin"],"properties":{"group_name":{"type":"string"},"origin":{"type":"string"},"user_name":{"type":"null"},"attribute_name":{"type":"null"},"attribute_value":{"type":"null"}}},
                 {"required":["attribute_name","attribute_value","origin"],"properties":{"attribute_name":{"type":"string"},"attribute_value":{"type":"string"},"origin":{"type":"string"},"user_name":{"type":"null"},"group_name":{"type":"null"}}},
             ]
+        if "role_collection_key" in props:
+            result.setdefault("allOf", []).append({"oneOf": [
+                {"required": ["role_collection_name"], "properties": {"role_collection_name": {"type": "string"}, "role_collection_key": {"type": "null"}}},
+                {"required": ["role_collection_key", "origin"], "properties": {"role_collection_key": {"type": "string"}, "role_collection_name": {"type": "null"}, "origin": {"type": "string"}}},
+            ]})
         if "parameters" in props and "parameters_key" in props:
             result["not"] = {"required":["parameters","parameters_key"],"properties":{"parameters":{"type":"string"},"parameters_key":{"type":"string"}}}
     elif kind == "map":

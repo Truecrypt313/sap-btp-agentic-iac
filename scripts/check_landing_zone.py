@@ -29,6 +29,12 @@ ROOTS = [
     ("BTP/modules/role-collections", True),
     ("BTP/modules/role-catalog-rules", True),
     ("CloudFoundry/modules/spaces", True),
+    ("BTP/modules/project-config", True),
+    ("BTP/modules/directory", True),
+    ("BTP/modules/directory-rules", True),
+    ("BTP/modules/service-catalog", True),
+    ("BTP/projects", True),
+    ("CloudFoundry/projects", True),
 ]
 
 
@@ -42,6 +48,7 @@ def main():
     parser.add_argument("--only", nargs="+", choices=[root for root, _ in ROOTS], help="Check selected roots only.")
     selected = parser.parse_args().only
     run([sys.executable, "scripts/build_landing_zone_config.py", "--check"], ROOT, os.environ, ".")
+    run([sys.executable, "scripts/build_project_schema.py"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/check_state_addresses.py"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/build_landing_zone_schema.py"], ROOT, os.environ, ".")
     run([sys.executable, "scripts/export_provider_schema.py", "--check"], ROOT, os.environ, ".")
@@ -73,8 +80,10 @@ def main():
                 # Local mock tests exercise the same workspace routing guard
                 # used by the intended remote TEST workspace.
                 env["TF_WORKSPACE"] = "sap-cloudfoundry-test"
+            if relative in ["BTP/projects", "CloudFoundry/projects"]:
+                env["TF_WORKSPACE"] = "sap-btp-test-neu-" + ("core" if relative == "BTP/projects" else "cf-dev")
             init = ["terraform", "init", "-backend=false", "-input=false", "-no-color"]
-            if relative in ["BTP/modules/environment-services", "BTP/modules/role-assignments", "BTP/modules/role-collections", "BTP/modules/srvc-baseline", "CloudFoundry/modules/spaces"]:
+            if relative in ["BTP/modules/environment-services", "BTP/modules/role-assignments", "BTP/modules/role-collections", "BTP/modules/srvc-baseline", "BTP/modules/directory", "BTP/modules/service-catalog", "CloudFoundry/modules/spaces"]:
                 provider = "sap/btp" if relative.startswith("BTP/") else "cloudfoundry/cloudfoundry"
                 parent = "BTP" if relative.startswith("BTP/") else "CloudFoundry"
                 lock = (ROOT / parent / ".terraform.lock.hcl").read_text()
@@ -90,6 +99,8 @@ def main():
             if tests:
                 canonical = checkout / "BTP/landing-zone.yaml"
                 original = canonical.read_bytes()
+                project_canonical = checkout / "BTP/generated/test-neu/landing-zone.yaml"
+                project_original = project_canonical.read_bytes()
                 try:
                     if relative == "CloudFoundry/environments":
                         canonical.write_bytes((checkout / "examples/landing-zone.enterprise.yaml").read_bytes())
@@ -97,8 +108,12 @@ def main():
                     if relative == "BTP":
                         canonical.write_bytes((checkout / "examples/landing-zone.enterprise.yaml").read_bytes())
                         run(["terraform", "test", "-no-color", "-test-directory=tests/enterprise"], cwd, env, relative)
+                    if relative in ["BTP/projects", "CloudFoundry/projects"]:
+                        project_canonical.write_bytes((checkout / "examples/project.test-neu.mock.yaml").read_bytes())
+                        run(["terraform", "test", "-no-color", "-test-directory=tests/active"], cwd, env, relative)
                 finally:
                     canonical.write_bytes(original)
+                    project_canonical.write_bytes(project_original)
 
 
 if __name__ == "__main__":

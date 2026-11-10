@@ -8,6 +8,94 @@
   "provider_schemas": {
     "registry.terraform.io/sap/btp": {
       "resource_schemas": {
+        "btp_directory": {
+          "version": 0,
+          "block": {
+            "attributes": {
+              "created_by": {
+                "type": "string",
+                "description": "The details of the user that created the directory.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "created_date": {
+                "type": "string",
+                "description": "The date and time when the resource was created in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "description": {
+                "type": "string",
+                "description": "A description of the directory.",
+                "description_kind": "markdown",
+                "optional": true,
+                "computed": true
+              },
+              "features": {
+                "type": [
+                  "set",
+                  "string"
+                ],
+                "description": "The features that are enabled for the directory. Possible values are: \n\n  | value | description | \n  | --- | --- | \n  | `DEFAULT (D)` | All directories have the following basic feature enabled:<br> 1. Group and filter subaccounts for reports and filters <br> 2. Monitor usage and costs on a directory level (costs only available for contracts that use the consumption-based commercial model)<br> 3. Set custom properties and tags to the directory for identification and reporting purposes. | \n  | `ENTITLEMENTS (E)` | Allows the assignment of a quota for services and applications to the directory from the global account quota for distribution to the subaccounts under this directory. | \n  | `AUTHORIZATIONS (A)` | Allows the assignment of users as administrators or viewers of this directory. You must apply this feature in combination with the `ENTITLEMENTS` feature. | ",
+                "description_kind": "markdown",
+                "optional": true,
+                "computed": true
+              },
+              "id": {
+                "type": "string",
+                "description": "The ID of the directory.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "labels": {
+                "type": [
+                  "map",
+                  [
+                    "set",
+                    "string"
+                  ]
+                ],
+                "description": "Contains information about the labels assigned to a specified global account. Labels are represented in a JSON array of key-value pairs; each key has up to 10 corresponding values.",
+                "description_kind": "markdown",
+                "optional": true
+              },
+              "last_modified": {
+                "type": "string",
+                "description": "The date and time when the resource was last modified in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "name": {
+                "type": "string",
+                "description": "The display name of the directory.",
+                "description_kind": "markdown",
+                "required": true
+              },
+              "parent_id": {
+                "type": "string",
+                "description": "The ID of the directory's parent entity. Typically this is the global account.",
+                "description_kind": "markdown",
+                "optional": true,
+                "computed": true
+              },
+              "state": {
+                "type": "string",
+                "description": "The current state of the directory. Possible values are: \n\n  | value | description | \n  | --- | --- | \n  | `OK` | The CRUD operation or series of operations completed successfully. | \n  | `STARTED` | CRUD operation on an entity has started. | \n  | `CREATING` | Creating entity operation is in progress. | \n  | `UPDATING` | Updating entity operation is in progress. | \n  | `MOVING` | Moving entity operation is in progress. | \n  | `PROCESSING` | A series of operations related to the entity is in progress. | \n  | `DELETING` | Deleting entity operation is in progress. | \n  | `PENDING REVIEW` | The processing operation has been stopped for reviewing and can be restarted by the operator. | \n  | `CANCELLED` | The operation or processing was canceled by the operator. | \n  | `CREATION_FAILED` | The creation operation failed, and the entity was not created or was created but cannot be used. | \n  | `UPDATE_FAILED` | The update operation failed, and the entity was not updated. | \n  | `PROCESSING_FAILED` | The processing operations failed. | \n  | `DELETION_FAILED` | The delete operation failed, and the entity was not deleted. | \n  | `MOVE_FAILED` | Entity could not be moved to a different location. | \n  | `MIGRATING` | Migrating entity from Neo to Cloud Foundry. | ",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "subdomain": {
+                "type": "string",
+                "description": "Applies only to directories that have the user authorization management feature enabled. The subdomain becomes part of the path used to access the authorization tenant of the directory. It has to be unique within the defined region.",
+                "description_kind": "markdown",
+                "optional": true,
+                "computed": true
+              }
+            },
+            "description": "Directories allow you to organize and manage your subaccounts according to your technical and business needs. The use of directories is optional.\n\nYou can create up to five levels of directories in your account hierarchy. If you have directories, you can still create subaccounts directly under your global account.\n\n__Tips:__\n* You must be assigned to the global account admin role, or the directory admin if the directory is configured to manage its authorizations.\n* A directory path in the account hierarchy can have only one directory that is enabled with the `ENTITLEMENTS` or `AUTHORIZATIONS` features. If such a directory exists, other directories in that path can only be enabled with the `DEFAULT` features.\n\n__Further documentation:__\n<https://help.sap.com/docs/btp/sap-business-technology-platform/account-model>",
+            "description_kind": "markdown"
+          }
+        },
         "btp_subaccount": {
           "version": 0,
           "block": {
@@ -866,6 +954,192 @@
         }
       },
       "data_source_schemas": {
+        "btp_directories": {
+          "version": 0,
+          "block": {
+            "attributes": {
+              "id": {
+                "type": "string",
+                "description": "The ID of the global account.",
+                "description_kind": "markdown",
+                "deprecated": true,
+                "deprecation_message": "Use the `btp_globalaccount` datasource instead",
+                "computed": true
+              },
+              "values": {
+                "nested_type": {
+                  "attributes": {
+                    "created_by": {
+                      "type": "string",
+                      "description": "The details of the user that created the directory.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "created_date": {
+                      "type": "string",
+                      "description": "The date and time when the resource was created in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "The description of the directory.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "features": {
+                      "type": [
+                        "set",
+                        "string"
+                      ],
+                      "description": "The features that are enabled for the directory. Possible values are: \n\n  | value | description | \n  | --- | --- | \n  | `DEFAULT`  | All directories have the following basic feature enabled:<br> 1. Group and filter subaccounts for reports and filters <br> 2. Monitor usage and costs on a directory level (costs only available for contracts that use the consumption-based commercial model)<br> 3. Set custom properties and tags to the directory for identification and reporting purposes. | \n  | `ENTITLEMENTS` | Allows the assignment of a quota for services and applications to the directory from the global account quota for distribution to the subaccounts under this directory. | \n  | `AUTHORIZATIONS` | Allows the assignment of users as administrators or viewers of this directory. You must apply this feature in combination with the `ENTITLEMENTS` feature. | ",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "The ID of the directory.",
+                      "description_kind": "markdown",
+                      "required": true
+                    },
+                    "labels": {
+                      "type": [
+                        "map",
+                        [
+                          "set",
+                          "string"
+                        ]
+                      ],
+                      "description": "The set of words or phrases assigned to the directory.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "last_modified": {
+                      "type": "string",
+                      "description": "The date and time when the resource was last modified in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The display name of the directory.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "parent_id": {
+                      "type": "string",
+                      "description": "The ID of the directory's parent entity. Typically this is the global account.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "state": {
+                      "type": "string",
+                      "description": "The current state of the directory. Possible values are: \n\n  | state | description | \n  | --- | --- | \n  | `OK` | The CRUD operation or series of operations completed successfully. | \n  | `STARTED` | CRUD operation on an entity has started. | \n  | `CANCELLED` | The operation or processing was canceled by the operator. | \n  | `PROCESSING` | A series of operations related to the entity is in progress. | \n  | `PROCESSING_FAILED` | The processing operations failed. | \n  | `CREATING` | Creating entity operation is in progress. | \n  | `CREATION_FAILED` | The creation operation failed, and the entity was not created or was created but cannot be used. | \n  | `UPDATING` | Updating entity operation is in progress. | \n  | `UPDATE_FAILED` | The update operation failed, and the entity was not updated. | \n  | `DELETING` | Deleting entity operation is in progress. | \n  | `DELETION_FAILED` | The delete operation failed, and the entity was not deleted. | \n  | `MOVING` | Moving entity operation is in progress. | \n  | `MOVE_FAILED` | Entity could not be moved to a different location. | \n  | `PENDING REVIEW` | The processing operation has been stopped for reviewing and can be restarted by the operator. | \n  | `MIGRATING` | Migrating entity from Neo to Cloud Foundry. | ",
+                      "description_kind": "markdown",
+                      "computed": true
+                    },
+                    "subdomain": {
+                      "type": "string",
+                      "description": "This applies only to directories that have the user authorization management feature enabled. The subdomain is part of the path used to access the authorization tenant of the directory.",
+                      "description_kind": "markdown",
+                      "computed": true
+                    }
+                  },
+                  "nesting_mode": "list"
+                },
+                "description": "The directories contained in the global account.",
+                "description_kind": "markdown",
+                "computed": true
+              }
+            },
+            "description": "Gets all the directories in a global account, including the directories in directories.\n\n__Tip:__\nYou must be assigned to the admin or viewer role of the global account, directory.",
+            "description_kind": "markdown"
+          }
+        },
+        "btp_directory": {
+          "version": 0,
+          "block": {
+            "attributes": {
+              "created_by": {
+                "type": "string",
+                "description": "The details of the user that created the directory.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "created_date": {
+                "type": "string",
+                "description": "The date and time when the resource was created in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the directory.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "features": {
+                "type": [
+                  "set",
+                  "string"
+                ],
+                "description": "The features that are enabled for the directory. Possible values are: \n\n  | value | description | \n  | --- | --- | \n  | `DEFAULT`  | All directories have the following basic feature enabled:<br> 1. Group and filter subaccounts for reports and filters <br> 2. Monitor usage and costs on a directory level (costs only available for contracts that use the consumption-based commercial model)<br> 3. Set custom properties and tags to the directory for identification and reporting purposes. | \n  | `ENTITLEMENTS` | Allows the assignment of a quota for services and applications to the directory from the global account quota for distribution to the subaccounts under this directory. | \n  | `AUTHORIZATIONS` | Allows the assignment of users as administrators or viewers of this directory. You must apply this feature in combination with the `ENTITLEMENTS` feature. | ",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "id": {
+                "type": "string",
+                "description": "The ID of the directory.",
+                "description_kind": "markdown",
+                "required": true
+              },
+              "labels": {
+                "type": [
+                  "map",
+                  [
+                    "set",
+                    "string"
+                  ]
+                ],
+                "description": "The set of words or phrases assigned to the directory.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "last_modified": {
+                "type": "string",
+                "description": "The date and time when the resource was last modified in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "name": {
+                "type": "string",
+                "description": "The display name of the directory.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "parent_id": {
+                "type": "string",
+                "description": "The ID of the directory's parent entity. Typically this is the global account.",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "state": {
+                "type": "string",
+                "description": "The current state of the directory. Possible values are: \n\n  | state | description | \n  | --- | --- | \n  | `OK` | The CRUD operation or series of operations completed successfully. | \n  | `STARTED` | CRUD operation on an entity has started. | \n  | `CANCELLED` | The operation or processing was canceled by the operator. | \n  | `PROCESSING` | A series of operations related to the entity is in progress. | \n  | `PROCESSING_FAILED` | The processing operations failed. | \n  | `CREATING` | Creating entity operation is in progress. | \n  | `CREATION_FAILED` | The creation operation failed, and the entity was not created or was created but cannot be used. | \n  | `UPDATING` | Updating entity operation is in progress. | \n  | `UPDATE_FAILED` | The update operation failed, and the entity was not updated. | \n  | `DELETING` | Deleting entity operation is in progress. | \n  | `DELETION_FAILED` | The delete operation failed, and the entity was not deleted. | \n  | `MOVING` | Moving entity operation is in progress. | \n  | `MOVE_FAILED` | Entity could not be moved to a different location. | \n  | `PENDING REVIEW` | The processing operation has been stopped for reviewing and can be restarted by the operator. | \n  | `MIGRATING` | Migrating entity from Neo to Cloud Foundry. | ",
+                "description_kind": "markdown",
+                "computed": true
+              },
+              "subdomain": {
+                "type": "string",
+                "description": "This applies only to directories that have the user authorization management feature enabled. The subdomain is part of the path used to access the authorization tenant of the directory.",
+                "description_kind": "markdown",
+                "computed": true
+              }
+            },
+            "description": "Gets the details about a directory.\n\n__Tip:__\nYou must be assigned to the global account admin role, or the directory admin if the directory is configured to manage its authorizations.\n\n__Further documentation:__\n<https://help.sap.com/docs/btp/sap-business-technology-platform/account-model>",
+            "description_kind": "markdown"
+          }
+        },
         "btp_directory_entitlements": {
           "version": 0,
           "block": {

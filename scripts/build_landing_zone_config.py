@@ -80,6 +80,16 @@ def assemble(config_dir):
     catalog = load_mapping(config_dir / "service-catalog.yaml")
     if set(catalog) != {"service_catalog"}:
         raise ConfigurationError("service-catalog.yaml: Genau service_catalog erforderlich")
+    environments = load_environments(config_dir)
+    # No deep merge, defaults, coercion, interpolation or IAM-policy import.
+    document = {**project, **catalog, "environments": environments}
+    errors = validate_document(document)
+    if errors:
+        raise ConfigurationError("Konfiguration verletzt das bestehende Schema:\n" + "\n".join(errors))
+    return document
+
+
+def load_environments(config_dir):
     environments_dir = config_dir / "environments"
     if any(path.name not in {stage.lower() + ".yaml" for stage in STAGES}
            for path in environments_dir.glob("*.y*ml")):
@@ -91,17 +101,12 @@ def assemble(config_dir):
         if set(fragment) != {stage} or not isinstance(fragment[stage], dict):
             raise ConfigurationError(f"{name}: Genau die Environment-Map {stage} erforderlich")
         environments[stage] = fragment[stage]
-    # No deep merge, defaults, coercion, interpolation or IAM-policy import.
-    document = {**project, **catalog, "environments": environments}
-    errors = validate_document(document)
-    if errors:
-        raise ConfigurationError("Konfiguration verletzt das bestehende Schema:\n" + "\n".join(errors))
-    return document
+    return environments
 
 
-def render(document):
+def render(document, header=HEADER):
     # Sorting maps removes dependence on source key order; lists retain order.
-    text = HEADER + yaml.safe_dump(
+    text = header + yaml.safe_dump(
         document, allow_unicode=True, sort_keys=True, default_flow_style=False,
         indent=2, width=100, line_break="\n",
     )
@@ -114,15 +119,20 @@ def render(document):
 
 def build(config_dir, output, check=False):
     content = render(assemble(config_dir))
+    write_artifact(content, output, check)
+
+
+def write_artifact(content, output, check=False):
     try:
         current = output.read_bytes() if output.exists() else None
         if check:
             if current != content:
-                raise ConfigurationError("landing-zone.yaml fehlt oder ist veraltet; Build-Skript ausführen")
+                raise ConfigurationError(f"{output}: landing-zone.yaml fehlt oder ist veraltet; Build-Skript ausführen")
         elif current != content:
             # Validate entirely before replacing the tracked artifact atomically.
             temporary = None
             try:
+                output.parent.mkdir(parents=True, exist_ok=True)
                 with tempfile.NamedTemporaryFile(dir=output.parent, delete=False) as stream:
                     temporary = Path(stream.name)
                     stream.write(content)
@@ -132,16 +142,20 @@ def build(config_dir, output, check=False):
                 if temporary is not None:
                     temporary.unlink(missing_ok=True)
     except OSError:
-        raise ConfigurationError("landing-zone.yaml: Datei kann nicht gelesen/geschrieben werden") from None
+        raise ConfigurationError(f"{output}: Datei kann nicht gelesen/geschrieben werden") from None
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="Fail on missing/stale generated YAML; never write")
+    parser.add_argument("--project", help="Build one registered project ID; also validate cross-project isolation")
     args = parser.parse_args()
+    # When invoked as __main__, the shared builder helpers are imported under
+    # their module name by project_configuration. Catch that same error class.
+    from project_configuration import build_projects, ConfigurationError as BuildError
     try:
-        build(ROOT / "BTP/config", ROOT / "BTP/landing-zone.yaml", check=args.check)
-    except ConfigurationError as error:
+        build_projects(ROOT, check=args.check, project_id=args.project)
+    except BuildError as error:
         raise SystemExit(str(error)) from None
     print("Landing-Zone-Konfiguration: " + ("aktuell und valide." if args.check else "generiert und valide."))
 

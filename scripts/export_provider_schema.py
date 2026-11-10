@@ -12,6 +12,14 @@ from schema_model import CONFIGURATION, hcl_type
 
 ROOT = Path(__file__).resolve().parents[1]
 MAPPING = {
+    "btp_directory": {
+        "name": "project.directory.name",
+        "description": "project.directory.description",
+        "features": "project.directory.features",
+        "labels": "project_id aus der Projektidentität",
+        "parent_id": "geprüfter Laufzeitinput directory_parent_id",
+        "subdomain": "Projekt-ID + directory bei AUTHORIZATIONS",
+    },
     "btp_subaccount": {
         "name": "environments.*.name; sonst Stage + project_name",
         "subdomain": "environments.*.subdomain; sonst bestehende UUID-Ableitung",
@@ -90,6 +98,11 @@ MAPPING = {
     },
 }
 RULES = {
+    "btp_directory": {
+        "features": "DEFAULT erforderlich; AUTHORIZATIONS benötigt ENTITLEMENTS. Pro Pfad höchstens ein erweitertes Directory, max. fünf Ebenen.",
+        "parent_id": "Live geprüfter Parent-Pfad im gleichen Global Account; bestehende Subaccounts werden nicht verschoben.",
+        "name": "Bestehende Directories nur als projektgebundene Data Source referenzieren, niemals doppelt erstellen.",
+    },
     "btp_subaccount": {
         "name": "1–255 Zeichen, kein /.",
         "description": "Maximal 300 Zeichen.",
@@ -140,6 +153,7 @@ RULES = {
     },
 }
 REPLACE = {
+    "btp_directory": {"parent_id", "subdomain"},
     "btp_subaccount_role_collection": {"subaccount_id", "name"},
     "btp_subaccount": {"region", "subdomain", "parent_id", "skip_auto_entitlement"},
     "btp_subaccount_entitlement": {"subaccount_id", "service_name", "plan_name"},
@@ -150,7 +164,7 @@ REPLACE = {
     "cloudfoundry_space": {"org"},
     "cloudfoundry_space_role": {"type", "user", "username", "origin", "space"},
 }
-DATA = {"btp_regions","btp_globalaccount","btp_globalaccount_entitlements_with_data_centers","btp_directory_entitlements",
+DATA = {"btp_directories", "btp_directory", "btp_regions","btp_globalaccount","btp_globalaccount_entitlements_with_data_centers","btp_directory_entitlements",
         "btp_subaccount_entitlements","btp_subaccount_service_plan","btp_subaccount_subscriptions",
         "btp_subaccount_environments","btp_subaccount_role_collection","btp_subaccount_roles"}
 
@@ -228,7 +242,8 @@ def render(snapshot):
                 if key not in writable:
                     rule = "Nicht als Input erlaubt. "+attr.get("description","").split("\n")[0]
                 elif key in REPLACE.get(name,set()):
-                    rule += " RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten."
+                    modifier = "RequiresReplaceIfConfigured" if key == "service_offering_name" or (name == "btp_directory" and key == "subdomain") else "RequiresReplace"
+                    rule += " " + modifier + "; Löschschutz/State-Abhängigkeiten beachten."
                 elif key == "timeouts":
                     rule += " Objekt mit create/update/delete, je optionaler Go-Duration-String; Template erlaubt positive Einheiten ns/us/ms/s/m/h."
                 lines.append("| "+" | ".join(map(cell,[key,data_type,status,MAPPING[name].get(key,"Provider-Ausgabe"),rule]))+" |")
@@ -265,7 +280,7 @@ def render(snapshot):
             lines.append("| "+" | ".join(map(cell,[path,hcl_type(node),"ja" if node["required"] else "nein",json.dumps(node["default"]),node.get("description","")+"; ".join(rules)]))+" |")
     walk(CONFIGURATION,"")
     lines += ["", "## Grenzen der Abdeckung", "",
-        "- Alle beschreibbaren Attribute der neun implementierten Ressourcentypen sind direkt oder abgeleitet verbunden.",
+        "- Alle beschreibbaren Attribute der implementierten Ressourcentypen sind direkt oder abgeleitet verbunden.",
         "- Berechnete Felder wie CF-Environment-custom_labels, Space.quota, IDs, Zeitstempel und Status sind keine YAML-Eingaben.",
         "- Eine CF-Space-Quota braucht eine eigene Ressource; hier wird keine Schreibfähigkeit erfunden.",
         "- Broker-Parameterschemas werden nicht vollständig lokal ausgeführt. Die API prüft dienstspezifische Semantik.",

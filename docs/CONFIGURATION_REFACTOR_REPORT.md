@@ -113,7 +113,7 @@ Terraform 1.15.5 wie HCP und Gitleaks 8.24.3:
 | Prüfung | Ergebnis |
 |---|---|
 | Python-Unittest-Suite | 62 bestanden, einschließlich 20 neuer Build-Tests |
-| Terraform-Tests über alle bisherigen Roots/Module und Enterprise-Layout | 151 bestanden, 0 fehlgeschlagen |
+| Terraform-Tests über alle bisherigen Roots/Module und Enterprise-Layout | 141 bestanden, 0 fehlgeschlagen |
 | Terraform validate | alle 14 geprüften Roots/Module bestanden |
 | `terraform fmt -check -recursive BTP CloudFoundry` | bestanden |
 | Build und `--check` | bestanden |

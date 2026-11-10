@@ -1,0 +1,20 @@
+# PROD ist im Trial ausdrücklich deaktiviert; keine produktiven Ressourcen.
+PROD:
+  enabled: false # Pflicht-Boolean; true ist nur für geeignetes Enterprise-Profil zulässig.
+  costcenter: "12345"
+  region: us10
+  iaas_provider: AWS
+  runtime: cloudfoundry
+  beta_enabled: false
+  labels: {}
+  administrators_source: yaml
+  administrators: []
+  administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
+  role_collections: {}
+  role_assignments: {}
+  cloud_foundry:
+    enabled: false
+    plan: standard # Nur zukünftiges Enterprise-Profil; dieses Feld aktiviert nichts.
+    spaces: {} # Künftig production; separater Projekt-/PROD-State zwingend.
+  services:
+    catalog: []

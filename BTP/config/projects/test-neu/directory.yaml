@@ -1,0 +1,17 @@
+# Optionales SAP-BTP-Directory; der lokale Projektordner ist kein SAP-Directory.
+directory:
+  # Pflicht-Boolean: false erstellt kein Directory. Projekt bleibt zusätzlich aus.
+  # Ein vorhandenes eigenes Directory wird später ausschließlich über den geprüften
+  # HCP-Input existing_directory_id referenziert, niemals erneut erstellt/importiert.
+  enabled: false
+  name: Test_Neu
+  # Optionaler String/null; keine Secrets. Änderungen können SAP-Metadaten ändern.
+  description: Vorbereitetes Projekt Test Neu
+  # Liste eindeutiger Strings. DEFAULT erforderlich; ENTITLEMENTS verwaltet
+  # Directory-Quoten, AUTHORIZATIONS verlangt zusätzlich ENTITLEMENTS.
+  # Pro Hierarchiepfad höchstens ein erweitertes Directory, maximal fünf Ebenen.
+  # Der Terraform-Directory-Baustein prüft den vorhandenen Parent-Pfad live.
+  features: [DEFAULT]
+  # Kein Parent-Identifier im YAML. Der optionale spätere Laufzeitinput
+  # directory_parent_id wird geprüft; null verwendet den Global Account.
+  # Directory-IAM/Quota-Zuweisungen sind separate zukünftige Berechtigungskontexte.

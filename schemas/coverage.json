@@ -1,4 +1,29 @@
 {
+  "btp_directory": {
+    "writable": [
+      "description",
+      "features",
+      "labels",
+      "name",
+      "parent_id",
+      "subdomain"
+    ],
+    "covered": [
+      "description",
+      "features",
+      "labels",
+      "name",
+      "parent_id",
+      "subdomain"
+    ],
+    "readonly": [
+      "created_by",
+      "created_date",
+      "id",
+      "last_modified",
+      "state"
+    ]
+  },
   "btp_subaccount": {
     "writable": [
       "beta_enabled",

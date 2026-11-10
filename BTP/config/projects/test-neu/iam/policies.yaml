@@ -1,0 +1,6 @@
+# Reserviert und NICHT AKTIV. Weder Builder noch Terraform lesen diese Datei.
+# Spätere Discovery muss Projekt-ID, Directory, Subaccount, CF-Org und Space
+# auseinanderhalten. Directory-Admins sind keine BTP- oder CF-Space-Admins.
+# Least Privilege, SoD und KI-Empfehlungen benötigen eigene Schemas/Reviews.
+# Keine automatischen Berechtigungsentscheidungen und keine Secrets.
+policies: {}

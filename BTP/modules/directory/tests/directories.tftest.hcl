@@ -1,3 +1,6 @@
+mock_provider "external" {
+  mock_data "external" { defaults = { result = { managed_id = "", inventory = "[]" } } }
+}
 mock_provider "btp" {
   override_during = plan
   mock_resource "btp_directory" { defaults = { id = "11111111-1111-4111-8111-111111111111" } }

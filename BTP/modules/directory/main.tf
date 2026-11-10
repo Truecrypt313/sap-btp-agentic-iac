@@ -1,7 +1,8 @@
 terraform {
   required_version = ">= 1.9.0, < 2.0.0"
   required_providers {
-    btp = { source = "SAP/btp", version = "~> 1.27.0" }
+    btp      = { source = "SAP/btp", version = "~> 1.27.0" }
+    external = { source = "hashicorp/external", version = "= 2.3.5" }
   }
 }
 variable "project_id" { type = string }
@@ -55,14 +56,29 @@ locals {
 data "btp_directories" "existing" {
   count = var.create ? 1 : 0
 }
+# Mandatory, read-only prior-state proof, independent of this resource's graph.
+# Never accept a caller-supplied ID or infer ownership from labels/names.
+data "external" "ownership" {
+  count   = var.create ? 1 : 0
+  program = ["python3", "${path.module}/../../../scripts/directory_ownership_preflight.py"]
+  query = {
+    project_id = var.project_id
+    workspace  = terraform.workspace
+    name       = var.name
+    inventory = jsonencode([for directory in data.btp_directories.existing[0].values : {
+      id          = directory.id
+      name        = directory.name
+      project_ids = try(directory.labels["project_id"], [])
+    }])
+  }
+}
 module "inventory_rules" {
   source     = "../directory-rules"
   project_id = var.project_id
   name       = var.name
-  inventory = [for directory in try(data.btp_directories.existing[0].values, []) : {
-    name        = directory.name
-    project_ids = try(directory.labels["project_id"], [])
-  }]
+  managed_id = var.create ? data.external.ownership[0].result.managed_id : ""
+  # One verified state/inventory snapshot, also auditable in the data-source result.
+  inventory = var.create ? jsondecode(data.external.ownership[0].result.inventory) : []
 }
 data "btp_directory" "ancestor_0" {
   count = local.lookup_id != null && local.lookup_id != var.globalaccount_id ? 1 : 0
@@ -108,7 +124,7 @@ resource "btp_directory" "this" {
     prevent_destroy = true
     precondition {
       condition     = module.inventory_rules.unique
-      error_message = "Directory name/project already exists. Reference its verified existing ID; do not create a duplicate."
+      error_message = "Foreign directory name/project collision, or owned ID missing from inventory. Ownership requires the exact ID from this workspace's state; never adopt/import a collision."
     }
     precondition {
       condition     = local.hierarchy_valid

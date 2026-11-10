@@ -6,7 +6,8 @@ terraform {
     workspaces { tags = ["landing-zone-project-btp"] }
   }
   required_providers {
-    btp = { source = "SAP/btp", version = "~> 1.27.0" }
+    btp      = { source = "SAP/btp", version = "~> 1.27.0" }
+    external = { source = "hashicorp/external", version = "= 2.3.5" }
   }
 }
 variable "project_id" {

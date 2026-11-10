@@ -10,6 +10,12 @@ DEV:
   iaas_provider: AWS
   runtime: cloudfoundry
   beta_enabled: false
+  # Boolean: true unterdrückt bei der ERSTELLUNG die automatisch zugewiesenen
+  # Standardpläne (SAP/btp 1.27.0). Weglassen/null/false überspringt sie nicht.
+  # Keine Beschaffung zusätzlicher Quoten; explizite services bleiben separat.
+  # Spätere Änderung erfordert laut Provider Ersatz des Subaccounts und wird
+  # durch prevent_destroy blockiert. Deshalb vor der ersten Erstellung setzen.
+  skip_auto_entitlement: true
   labels: {}
   # Name wird aus Anzeigename/Stage gebildet; Subdomain und CF-Org aus
   # test-neu-dev. parent_id darf hier nicht gesetzt werden: die generische

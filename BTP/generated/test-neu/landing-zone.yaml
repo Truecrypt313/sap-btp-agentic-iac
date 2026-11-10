@@ -27,6 +27,7 @@ configuration:
       runtime: cloudfoundry
       services:
         catalog: []
+      skip_auto_entitlement: true
       subdomain: test-neu-dev
     PROD:
       administrator_options:

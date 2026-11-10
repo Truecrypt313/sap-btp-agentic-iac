@@ -145,7 +145,11 @@ Der neue Baustein nutzt `btp_directory` aus dem unverändert gepinnten SAP/btp
 Die ausgeschriebenen Feature-Namen sind vorgeschrieben; Provider-Kurzformen
 werden bewusst nicht als zusätzlicher Konfigurationsdialekt eingeführt.
 Der Baustein prüft vor Erstellung das aktuelle Directory-Inventar und verhindert
-eine zweite Erstellung bei gleichem Namen oder bereits zugeordneter Projekt-ID.
+eine zweite Erstellung bei fremdem gleichem Namen oder bereits zugeordneter
+Projekt-ID. Ein obligatorischer lesender HCP-State-Preflight erkennt das selbst
+verwaltete Directory anhand seiner tatsächlichen ID; diese ID bleibt auch bei
+Folgeplänen zulässig. Ablauf, Laufzeitvoraussetzungen und Sicherheitsgrenzen:
+[Directory-Stabilisierung](DIRECTORY_STABILIZATION.md).
 Für Inventar und Parent-Prüfung werden geeignete Lese-/Administrationsrechte
 im Global Account benötigt. Die API bleibt für Account-Fähigkeiten maßgeblich.
 
@@ -155,7 +159,12 @@ vorhandene Vorfahren geprüft. Directories mit fremdem `project_id`-Label werden
 als Parent zurückgewiesen; ein explizit gewählter gemeinsamer Parent ohne
 Projektzuordnung ist möglich. Keine bestehenden Subaccounts werden verschoben.
 
-Vorhandenes eigenes Directory: `directory.enabled: false` und später ausdrücklich
+Bereits in diesem Workspace erstelltes Directory: `directory.enabled: true`
+beibehalten. Nicht auf `existing_directory_id` umschalten; die bestehende
+Ressource muss unter derselben State-Adresse verwaltet bleiben.
+
+Separat verwaltetes, ausdrücklich nur zu referenzierendes Projekt-Directory:
+`directory.enabled: false` und später ausdrücklich
 `existing_directory_id` als Laufzeitinput setzen. Der Baustein liest dieses
 Directory und verlangt passendes `project_id`-Label, Name und Features. Er
 erstellt oder importiert es nicht und verändert dessen Parent nicht.

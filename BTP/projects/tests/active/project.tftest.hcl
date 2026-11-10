@@ -1,3 +1,6 @@
+mock_provider "external" {
+  mock_data "external" { defaults = { result = { managed_id = "", inventory = "[]" } } }
+}
 # Only the disposable test checkout receives examples/project.test-neu.mock.yaml.
 mock_provider "btp" {
   override_during = plan

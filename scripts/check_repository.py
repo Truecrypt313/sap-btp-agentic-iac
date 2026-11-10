@@ -43,6 +43,7 @@ def check_locks(root, base):
         "registry.terraform.io/hashicorp/random": "3.9.1",
         "registry.terraform.io/cloudfoundry/cloudfoundry": "1.18.0",
         "registry.terraform.io/hashicorp/tfe": "0.83.0",
+        "registry.terraform.io/hashicorp/external": "2.3.5",
     }
     for relative in ["BTP/.terraform.lock.hcl", "CloudFoundry/.terraform.lock.hcl", "CloudFoundry/environments/.terraform.lock.hcl", "BTP/projects/.terraform.lock.hcl", "CloudFoundry/projects/.terraform.lock.hcl"]:
         if not (root / relative).exists():
@@ -52,6 +53,8 @@ def check_locks(root, base):
             version = re.search(r'version\s*=\s*"([^"]+)"', block).group(1)
             if provider not in expected or version != expected[provider]:
                 raise ValueError("Unreviewed provider/version in " + relative)
+            if provider == "registry.terraform.io/hashicorp/external" and relative != "BTP/projects/.terraform.lock.hcl":
+                raise ValueError("Directory preflight provider is only permitted in the isolated BTP/projects root")
         if not base:
             continue
         previous = subprocess.run(["git", "show", f"{base}:{relative}"], cwd=root, capture_output=True)

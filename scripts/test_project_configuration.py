@@ -63,6 +63,7 @@ class ProjectTests(unittest.TestCase):
             self.assertFalse(env["enabled"])
             self.assertFalse(env["cloud_foundry"]["enabled"])
             self.assertEqual(env["services"], {"catalog": []})
+        self.assertIs(project["configuration"]["environments"]["DEV"]["skip_auto_entitlement"], True)
 
     def test_project_id_path_reserved_and_type_guards(self):
         path = self.directory / "project.yaml"

@@ -1,3 +1,6 @@
+mock_provider "external" {
+  mock_data "external" { defaults = { result = { managed_id = "", inventory = "[]" } } }
+}
 mock_provider "btp" {}
 variables {
   project_id    = "test-neu"

@@ -179,5 +179,3 @@ cloudfoundry_space_role.space_manager
 ```text
 module.spaces.cloudfoundry_space.this["project"]
 ```
-
-

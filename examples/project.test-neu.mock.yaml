@@ -1,0 +1,142 @@
+# NUR MOCK-TESTS: synthetische aktivierte Architektur, niemals als Deployment-Vorlage kopieren.
+# Produktionsartefakt unter BTP/generated/test-neu/ bleibt deaktiviert.
+configuration:
+  account_type: trial
+  environments:
+    DEV:
+      administrator_options:
+        origin: null
+        role_collection_name: Subaccount Administrator
+      administrators: []
+      administrators_source: yaml
+      beta_enabled: false
+      cloud_foundry:
+        enabled: true
+        landscape_label: cf-us10-001
+        name: test-neu-dev
+        plan: trial
+        spaces:
+          backend:
+            name: test-neu-dev-backend
+          frontend:
+            name: test-neu-dev-frontend
+      costcenter: '12345'
+      enabled: true
+      iaas_provider: AWS
+      labels: {}
+      name: Test Neu DEV
+      region: us10
+      role_assignments:
+        reader:
+          origin: sap.default
+          role_collection_key: reader
+          user_name: reader@example.invalid
+      role_collections:
+        reader:
+          name: Test Neu DEV Reader
+          roles:
+            reader:
+              name: Read
+              role_template_app_id: app!test
+              role_template_name: Read
+      runtime: cloudfoundry
+      services:
+        alert_notification:
+          amount: 1
+          enabled: true
+          instance: true
+          plan: standard
+        catalog: []
+      subdomain: test-neu-dev
+    PROD:
+      administrator_options:
+        origin: null
+        role_collection_name: Subaccount Administrator
+      administrators: []
+      administrators_source: yaml
+      beta_enabled: false
+      cloud_foundry:
+        enabled: false
+        name: test-neu-prod
+        plan: standard
+        spaces: {}
+      costcenter: '12345'
+      enabled: false
+      iaas_provider: AWS
+      labels: {}
+      name: Test Neu PROD
+      region: us10
+      role_assignments: {}
+      role_collections: {}
+      runtime: cloudfoundry
+      services:
+        catalog: []
+      subdomain: test-neu-prod
+    TEST:
+      administrator_options:
+        origin: null
+        role_collection_name: Subaccount Administrator
+      administrators: []
+      administrators_source: yaml
+      beta_enabled: false
+      cloud_foundry:
+        enabled: true
+        landscape_label: cf-us10-001
+        name: test-neu-test
+        plan: trial
+        spaces:
+          testing:
+            name: test-neu-test-testing
+      costcenter: '12345'
+      enabled: true
+      iaas_provider: AWS
+      labels: {}
+      name: Test Neu TEST
+      region: us10
+      role_assignments: {}
+      role_collections: {}
+      runtime: cloudfoundry
+      services:
+        catalog: []
+      subdomain: test-neu-test
+  project_name: Test Neu
+  schema_version: 2
+  service_catalog:
+    alert_standard:
+      instance: {}
+      plan_name: standard
+      profiles:
+      - trial
+      - enterprise
+      service_name: alert-notification
+    feature_flags_dashboard:
+      plan_name: dashboard
+      profiles:
+      - trial
+      - enterprise
+      service_name: feature-flags-dashboard
+      subscription:
+        app_name: feature-flags-dashboard
+    feature_flags_lite:
+      instance: {}
+      plan_name: lite
+      profiles:
+      - trial
+      - enterprise
+      service_name: feature-flags
+    work_zone_standard:
+      plan_name: standard
+      profiles:
+      - trial
+      - enterprise
+      service_name: SAPLaunchpad
+      subscription:
+        app_name: SAPLaunchpad
+deployment_enabled: true
+directory:
+  description: Vorbereitetes Projekt Test Neu
+  enabled: true
+  features:
+  - DEFAULT
+  name: Test_Neu
+project_id: test-neu

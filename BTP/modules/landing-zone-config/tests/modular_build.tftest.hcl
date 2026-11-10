@@ -1,8 +1,10 @@
 # Independent Terraform normalization/jsonencode, not a Python hash imitation.
-# Fixture captured from unchanged main before the modular split, Terraform 1.15.5.
+# Historical fixture tests the original migration without pinning future desired
+# infrastructure. Active source/artifact consistency and legacy address/IAM guards
+# remain separate. Use check_project_abc_compatibility.py for a specific refactor.
 variables {
-  configuration     = yamldecode(file("../../landing-zone.yaml"))
-  raw_configuration = yamldecode(file("../../landing-zone.yaml"))
+  configuration     = jsondecode(file("../../../scripts/fixtures/landing-zone.pre-modular.json")).raw
+  raw_configuration = jsondecode(file("../../../scripts/fixtures/landing-zone.pre-modular.json")).raw
 }
 
 run "preserve_pre_modular_configuration_and_fingerprints" {

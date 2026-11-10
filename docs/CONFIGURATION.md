@@ -5,6 +5,11 @@ daraus die weiterhin versionierte `BTP/landing-zone.yaml`. Alle bestehenden
 Terraform-Roots lesen ausschließlich dieses Artefakt über `yamldecode(file(...))`.
 Ein HCP-Run benötigt weder Python noch einen vorgeschalteten Build.
 
+Neue Projekte werden zusätzlich unter `BTP/config/projects/<project_id>/`
+beschrieben und separat nach `BTP/generated/<project_id>/landing-zone.yaml`
+gebaut. Die bestehenden Project-ABC-Pfade und ihr Format bleiben unverändert.
+Details: [Multi-Project-Architektur](MULTI_PROJECT_ARCHITECTURE.md).
+
 ```text
 BTP/
 ├── landing-zone.yaml                 generierter, versionierter Terraform-Eingang
@@ -210,17 +215,21 @@ Der vor der Umstellung erstellte Snapshot
 `scripts/fixtures/landing-zone.pre-modular.json` enthält die vollständige
 ursprüngliche Struktur, unabhängig mit Terraform 1.15.5 normalisierte Daten,
 Hashes und Herkunftscommit. Er enthält keine HCP-Variablen oder State-Inhalte.
-Python prüft die vollständige Struktur typensensitiv, einschließlich
+Die historischen Tests verwenden seine eingefrorenen Eingaben. Python prüft
+deren vollständige Struktur typensensitiv, einschließlich
 fehlend/`null`, IAM und Legacy-Werten. Der neue providerfreie Terraform-Test
 prüft dieselben Daten nach echter Modulnormalisierung und beide Hash-Verträge.
 Terraform-Sets werden beim Python-Vergleich nur an im Modell deklarierten
 Set-Feldern kanonisiert; Quelllisten bleiben unverändert.
 
-Der Snapshot ist der Regression-Vertrag dieses Refactorings und wird nicht vom
-Builder aktualisiert. Zukünftige beabsichtigte Infrastrukturänderungen benötigen
-separat geprüfte Anpassungen dieser Erwartungen; die ursprüngliche Herkunft
-bleibt über Git nachvollziehbar. Einen unerwarteten Hash niemals nur durch
-Neugenerierung von Erwartungen akzeptieren.
+Der Snapshot bleibt als historischer Migrationsnachweis unverändert und wird
+nicht vom Builder aktualisiert. Aktuelle Artefakte werden gegen ihre Quellen
+und gezielte Sicherheits-/Legacy-Invarianten geprüft. Für ein konkretes
+Configuration-Refactoring kann zusätzlich
+`check_project_abc_compatibility.py --base <Ausgangscommit>` vollständige
+Unverändertheit nachweisen. So bleiben spätere beabsichtigte Sollzustandsänderungen
+möglich. Einen unerwarteten Hash niemals nur durch Neugenerierung von
+Erwartungen akzeptieren.
 
 GitHub-CI läuft für jeden PR, prüft Quellen gegen das versionierte Artefakt,
 Schema, Tests, State-Adressen, Provider-Locks, Secrets und unveränderte generierte

@@ -1,0 +1,33 @@
+# Nur DEV dieses Projekts; keine historischen Project-ABC-DEV-Sonderfälle.
+DEV:
+  # Explizites Boolean erforderlich. Beide Schalter (Projekt und Umgebung)
+  # müssen später true sein. Derzeit keinerlei Provisionierung.
+  enabled: false
+  # Pflicht-String mit fünf Ziffern; kein Integer.
+  costcenter: "12345"
+  # Region/Provider sind Filter des Live-Katalogs; Änderungen können ersetzen.
+  region: us10
+  iaas_provider: AWS
+  runtime: cloudfoundry
+  beta_enabled: false
+  labels: {}
+  # Name wird aus Anzeigename/Stage gebildet; Subdomain und CF-Org aus
+  # test-neu-dev. parent_id darf hier nicht gesetzt werden: die generische
+  # Ressource referenziert das tatsächlich erzeugte/geprüfte Directory.
+  # BTP-IAM ist unabhängig von Directory- und Cloud-Foundry-IAM.
+  administrators_source: yaml
+  administrators: [] # Benutzerliste; leer vergibt keine Administratorrechte.
+  administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
+  role_collections: {} # Stabile Schlüssel, name und exakte Rollen-Tripel.
+  role_assignments: {} # Verwaltete Collections/Gruppen/Attribute brauchen explizite origin.
+  cloud_foundry:
+    enabled: false
+    plan: trial
+    # Künftig z. B. backend/frontend als stabile Space-Schlüssel mit name,
+    # optionalen managers/developers oder expliziten roles. Nur bei aktivem CF.
+    # Origins sind bestehende CF-IdPs; keine BTP-Rollen hier verwenden.
+    spaces: {}
+  # Aliase des zentralen Katalogs, keine eigenen Service-Definitionen.
+  # Leere Auswahl erstellt keine Entitlements, Instanzen oder Subscriptions.
+  services:
+    catalog: []

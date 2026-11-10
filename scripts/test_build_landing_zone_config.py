@@ -206,6 +206,7 @@ class BuildTests(unittest.TestCase):
 
     def test_raw_and_normalized_match_pre_refactor_snapshot(self):
         baseline = json.loads(FIXTURE.read_text())
+        self.historical_sources(baseline["raw"])
         actual = assemble(self.config)
         self.assertEqual(canonical(actual), canonical(baseline["raw"]))
         normalized = terraform_sets(CONFIGURATION, normalize(CONFIGURATION, actual))
@@ -215,13 +216,28 @@ class BuildTests(unittest.TestCase):
         self.assertNotIn("parameters", actual["environments"]["TEST"]["cloud_foundry"])
 
     def test_all_iam_and_legacy_values_match_snapshot(self):
-        baseline = json.loads(FIXTURE.read_text())["normalized"]
+        fixture = json.loads(FIXTURE.read_text())
+        self.historical_sources(fixture["raw"])
+        baseline = fixture["normalized"]
         actual = normalize(CONFIGURATION, assemble(self.config))
         for stage in ["DEV", "TEST", "PROD"]:
             for key in ["administrators_source", "administrators", "administrator_options", "role_collections", "role_assignments"]:
                 self.assertEqual(canonical(actual["environments"][stage][key]), canonical(baseline["environments"][stage][key]))
             self.assertEqual(canonical(actual["environments"][stage]["cloud_foundry"]["spaces"]),
                              canonical(baseline["environments"][stage]["cloud_foundry"]["spaces"]))
+
+    def historical_sources(self, raw):
+        # Migration evidence uses frozen inputs, never pins the active desired
+        # configuration forever. Current source/artifact consistency stays tested.
+        (self.config / "project.yaml").write_text(yaml.safe_dump({key: raw[key] for key in ["schema_version", "account_type", "project_name"]}))
+        (self.config / "service-catalog.yaml").write_text(yaml.safe_dump({"service_catalog": raw["service_catalog"]}))
+        for stage, environment in raw["environments"].items():
+            (self.config / "environments" / (stage.lower()+".yaml")).write_text(yaml.safe_dump({stage: environment}))
+
+    def test_deliberate_valid_configuration_change_is_buildable(self):
+        self.replace("project.yaml", lambda doc: doc.update(project_name="Reviewed Project Change"))
+        build(self.config, self.output)
+        build(self.config, self.output, check=True)
 
 
 if __name__ == "__main__":

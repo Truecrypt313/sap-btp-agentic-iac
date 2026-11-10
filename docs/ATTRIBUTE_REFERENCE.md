@@ -6,6 +6,24 @@ JSON-Schema exportiert keine Validatoren oder RequiresReplace-Planmodifier. Die
 folgenden Regeln/Risiken wurden zusätzlich im Quellcode derselben Tags geprüft.
 API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zugesichert.
 
+## btp_directory
+
+[Versionierte Primärquelle](https://github.com/SAP/terraform-provider-btp/blob/v1.27.0/btp/provider/resource_directory.go)
+
+| Attribut | Typ | Status | YAML/Quelle | Werte, Abhängigkeiten und Risiko |
+|---|---|---|---|---|
+| created_by | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The details of the user that created the directory. |
+| created_date | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The date and time when the resource was created in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format. |
+| description | "string" | Optional, computed | project.directory.description | Provider-/API-Plan prüfen. |
+| features | ["set", "string"] | Optional, computed | project.directory.features | DEFAULT erforderlich; AUTHORIZATIONS benötigt ENTITLEMENTS. Pro Pfad höchstens ein erweitertes Directory, max. fünf Ebenen. |
+| id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the directory. |
+| labels | ["map", ["set", "string"]] | Optional | project_id aus der Projektidentität | Provider-/API-Plan prüfen. |
+| last_modified | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The date and time when the resource was last modified in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format. |
+| name | "string" | Pflicht | project.directory.name | Bestehende Directories nur als projektgebundene Data Source referenzieren, niemals doppelt erstellen. |
+| parent_id | "string" | Optional, computed | geprüfter Laufzeitinput directory_parent_id | Live geprüfter Parent-Pfad im gleichen Global Account; bestehende Subaccounts werden nicht verschoben. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| state | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The current state of the directory. Possible values are:  |
+| subdomain | "string" | Optional, computed | Projekt-ID + directory bei AUTHORIZATIONS | Provider-/API-Plan prüfen. RequiresReplaceIfConfigured; Löschschutz/State-Abhängigkeiten beachten. |
+
 ## btp_subaccount
 
 [Versionierte Primärquelle](https://github.com/SAP/terraform-provider-btp/blob/v1.27.0/btp/provider/resource_subaccount.go)
@@ -22,11 +40,11 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 | last_modified | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The date and time when the resource was last modified in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format. |
 | name | "string" | Pflicht | environments.*.name; sonst Stage + project_name | 1–255 Zeichen, kein /. |
 | parent_features | ["set", "string"] | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The features of parent entity of the subaccount. |
-| parent_id | "string" | Optional, computed | environments.*.parent_id | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| region | "string" | Pflicht | environments.*.region, aufgelöst durch region-catalog | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| skip_auto_entitlement | "bool" | Optional | environments.*.skip_auto_entitlement | Creation-only; null bewahrt bisherigen Zustand. Nach Import nicht rekonstruierbar. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| parent_id | "string" | Optional, computed | environments.*.parent_id | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| region | "string" | Pflicht | environments.*.region, aufgelöst durch region-catalog | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| skip_auto_entitlement | "bool" | Optional | environments.*.skip_auto_entitlement | Creation-only; null bewahrt bisherigen Zustand. Nach Import nicht rekonstruierbar. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | state | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The current state of the subaccount. Possible values are:  |
-| subdomain | "string" | Pflicht | environments.*.subdomain; sonst bestehende UUID-Ableitung | Regional eindeutig; Template erzwingt Kleinbuchstaben/Ziffern/Bindestriche. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| subdomain | "string" | Pflicht | environments.*.subdomain; sonst bestehende UUID-Ableitung | Regional eindeutig; Template erzwingt Kleinbuchstaben/Ziffern/Bindestriche. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | usage | "string" | Optional, computed | environments.*.usage | UNSET, NOT_USED_FOR_PRODUCTION, USED_FOR_PRODUCTION; letzteres nur Enterprise-PROD. |
 
 ## btp_subaccount_entitlement
@@ -41,11 +59,11 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 | id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the entitled service plan. |
 | last_modified | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The date and time when the resource was last modified in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format. |
 | plan_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the entitled service plan. |
-| plan_name | "string" | Pflicht | service_catalog.*.plan_name / services.entitlements.*.plan_name / Preset.plan | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| plan_name | "string" | Pflicht | service_catalog.*.plan_name / services.entitlements.*.plan_name / Preset.plan | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | plan_unique_identifier | "string" | Optional, computed | Katalogdefinition, Custom-Entitlement oder Preset.plan_unique_identifier | Bei mehreren Preisvarianten zwingend explizit auswählen; keine erste Variante nehmen. |
-| service_name | "string" | Pflicht | service_catalog.*.service_name / services.entitlements.*.service_name / dokumentiertes Preset | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| service_name | "string" | Pflicht | service_catalog.*.service_name / services.entitlements.*.service_name / dokumentiertes Preset | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | state | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The current state of the entitlement. Possible values are:  |
-| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 
 ## btp_subaccount_environment_instance
 
@@ -58,21 +76,21 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 | custom_labels | ["map", ["set", "string"]] | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The set of words or phrases assigned to the environment instance. |
 | dashboard_url | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The URL of the service dashboard, which is a web-based management user interface for the service instances. |
 | description | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The description of the environment instance. |
-| environment_type | "string" | Pflicht | environments.*.cloud_foundry.environment_type (CF-Vertrag) | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| environment_type | "string" | Pflicht | environments.*.cloud_foundry.environment_type (CF-Vertrag) | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the environment instance. |
 | labels | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The Broker-specified key-value pairs that specify attributes of an environment instance. |
-| landscape_label | "string" | Optional, computed | environments.*.cloud_foundry.landscape_label; eindeutiger Katalogtreffer | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| landscape_label | "string" | Optional, computed | environments.*.cloud_foundry.landscape_label; eindeutiger Katalogtreffer | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | last_modified | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The date and time when the resource was last modified in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format. |
-| name | "string" | Pflicht | environments.*.cloud_foundry.name; sonst eindeutige Subdomain | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| name | "string" | Pflicht | environments.*.cloud_foundry.name; sonst eindeutige Subdomain | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | operation | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. An identifier that represents the last operation. This ID is returned by the environment brokers. |
 | parameters | "string" | Pflicht | environments.*.cloud_foundry.parameters / parameters_key; sonst instance_name | Provider-/API-Plan prüfen. |
 | plan_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the service plan for the environment instance in the corresponding service broker's catalog. |
 | plan_name | "string" | Pflicht | environments.*.cloud_foundry.plan | Provider-/API-Plan prüfen. |
 | platform_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the platform for the environment instance in the corresponding service broker's catalog. |
 | service_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the service for the environment instance in the corresponding service broker's catalog. |
-| service_name | "string" | Pflicht | environments.*.cloud_foundry.service_name (CF-Vertrag) | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| service_name | "string" | Pflicht | environments.*.cloud_foundry.service_name (CF-Vertrag) | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | state | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The current state of the environment instance. Possible values are:  |
-| subaccount_id | "string" | Pflicht | abgeleitet aus dem Subaccount derselben Umgebung | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| subaccount_id | "string" | Pflicht | abgeleitet aus dem Subaccount derselben Umgebung | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | tenant_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the tenant that owns the environment instance. |
 | timeouts | {"object": {"create": "string", "delete": "string", "update": "string"}} | Optional | environments.*.cloud_foundry.timeouts | Provider-/API-Plan prüfen. Objekt mit create/update/delete, je optionaler Go-Duration-String; Template erlaubt positive Einheiten ns/us/ms/s/m/h. |
 | timeouts.create | "string" | Optional | environments.*.cloud_foundry.timeouts.create | Zeitlimit; zu kleine Werte können Timeouts verursachen, ändern keine State-Adresse. |
@@ -88,12 +106,12 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 |---|---|---|---|---|
 | description | "string" | Optional, computed | role_collections.*.description | Provider-/API-Plan prüfen. |
 | id | "string" | Nur gelesen, computed, deprecated | Provider-Ausgabe | Nicht als Input erlaubt. The combined unique ID of the role collection as used for import operations. |
-| name | "string" | Pflicht | role_collections.*.name | Eindeutig je Subaccount; stabile YAML-Schlüssel. Vorhandene Collections nicht doppelt anlegen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| name | "string" | Pflicht | role_collections.*.name | Eindeutig je Subaccount; stabile YAML-Schlüssel. Vorhandene Collections nicht doppelt anlegen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | roles | {"object": {"name": "string", "role_template_app_id": "string", "role_template_name": "string"}} | Pflicht | role_collections.*.roles.* | Mindestens eine Rolle; jedes Tripel muss im SAP-Katalog eindeutig existieren und erforderliche Attribute müssen belegt sein. |
 | roles.name | "string" | Pflicht | role_collections.*.roles.*.name | Teil der exakten Rollenidentität; gegen den SAP-Rollenkatalog geprüft. |
 | roles.role_template_app_id | "string" | Pflicht | role_collections.*.roles.*.role_template_app_id | Teil der exakten Rollenidentität; gegen den SAP-Rollenkatalog geprüft. |
 | roles.role_template_name | "string" | Pflicht | role_collections.*.roles.*.role_template_name | Teil der exakten Rollenidentität; gegen den SAP-Rollenkatalog geprüft. |
-| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 
 ## btp_subaccount_role_collection_assignment
 
@@ -101,14 +119,14 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 
 | Attribut | Typ | Status | YAML/Quelle | Werte, Abhängigkeiten und Risiko |
 |---|---|---|---|---|
-| attribute_name | "string" | Optional | role_assignments.*.attribute_name | Benötigt attribute_value und origin. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| attribute_value | "string" | Optional | role_assignments.*.attribute_value | Benötigt attribute_name. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| group_name | "string" | Optional | role_assignments.*.group_name | Benötigt origin; externe Collection wird gelesen, verwaltete Collection per Schlüssel referenziert. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| attribute_name | "string" | Optional | role_assignments.*.attribute_name | Benötigt attribute_value und origin. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| attribute_value | "string" | Optional | role_assignments.*.attribute_value | Benötigt attribute_name. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| group_name | "string" | Optional | role_assignments.*.group_name | Benötigt origin; externe Collection wird gelesen, verwaltete Collection per Schlüssel referenziert. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | id | "string" | Nur gelesen, computed, deprecated | Provider-Ausgabe | Nicht als Input erlaubt. The combined unique ID of the role collection. |
-| origin | "string" | Optional, computed | administrator_options.origin / role_assignments.*.origin | Providerdefault ldap; null erhält Legacy-Verhalten. Custom-IdP nur ausdrücklich wählen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| role_collection_name | "string" | Pflicht | administrator_options.role_collection_name / role_assignments.*.role_collection_name / role_collection_key als Ressourcenreferenz | Externer Name oder role_collection_key einer verwalteten Collection; genau eine Quelle. Neue verwaltete Bindungen benötigen expliziten origin. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| user_name | "string" | Optional | administrators / bestehender DEV-HCP-Input / role_assignments.*.user_name | Genau eines von user_name/group_name/attribute_name; 1–256 Zeichen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| origin | "string" | Optional, computed | administrator_options.origin / role_assignments.*.origin | Providerdefault ldap; null erhält Legacy-Verhalten. Custom-IdP nur ausdrücklich wählen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| role_collection_name | "string" | Pflicht | administrator_options.role_collection_name / role_assignments.*.role_collection_name / role_collection_key als Ressourcenreferenz | Externer Name oder role_collection_key einer verwalteten Collection; genau eine Quelle. Neue verwaltete Bindungen benötigen expliziten origin. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| user_name | "string" | Optional | administrators / bestehender DEV-HCP-Input / role_assignments.*.user_name | Genau eines von user_name/group_name/attribute_name; 1–256 Zeichen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 
 ## btp_subaccount_service_instance
 
@@ -127,7 +145,7 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 | platform_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The platform ID. |
 | ready | "bool" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt.  |
 | referenced_instance_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the instance to which the service instance refers. |
-| service_offering_name | "string" | Optional, computed | bei use_plan_names: services.instances.*.offering / Preset / Katalogdefinition | Benötigt serviceplan_name, schließt serviceplan_id aus. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| service_offering_name | "string" | Optional, computed | bei use_plan_names: services.instances.*.offering / Preset / Katalogdefinition | Benötigt serviceplan_name, schließt serviceplan_id aus. RequiresReplaceIfConfigured; Löschschutz/State-Abhängigkeiten beachten. |
 | serviceplan_id | "string" | Optional, computed | Instanzoptionen.serviceplan_id als geprüfter Lookup oder tatsächliche Katalog-ID | Alternativ zu serviceplan_name + service_offering_name; echter, bereiter Katalogplan. |
 | serviceplan_name | "string" | Optional, computed | bei use_plan_names: offering + plan; kein gleichzeitiges ID-Argument | Benötigt service_offering_name, schließt serviceplan_id aus. |
 | shared | "bool" | Optional, computed | Instanzoptionen.shared; tatsächlicher Plan muss shareable sein | Nur wenn der tatsächliche Plan shareable=true meldet. |
@@ -147,7 +165,7 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 |---|---|---|---|---|
 | additional_plan_features | ["set", "string"] | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The list of features specific to this plan. |
 | app_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID returned by XSUAA after the app provider has performed a bind of the multitenant application to an XSUAA service instance. |
-| app_name | "string" | Pflicht | services.subscriptions.*.app_name / Katalogdefinition.subscription.app_name / Preset | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| app_name | "string" | Pflicht | services.subscriptions.*.app_name / Katalogdefinition.subscription.app_name / Preset | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | authentication_provider | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The authentication provider of the multitenant application. * XSUAA is the SAP Authorization and Trust Management service that defines scopes and permissions for users as tenants at the global account level. * IAS is Identity Authentication Service that defines scopes and permissions for users in zones (common data isolation systems across systems, SaaS tenants, and services). |
 | category | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The technical name of the category defined by the app developer to which the multitenant application is grouped in customer-facing UIs. |
 | commercial_app_name | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The commercial name of the deployed multitenant application as defined by the app developer. |
@@ -165,7 +183,7 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 | platform_entity_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the landscape-specific environment. |
 | quota | "number" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The total amount the subscribed subaccount is entitled to consume. |
 | state | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The subscription state of the subaccount regarding the multitenant application. |
-| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| subaccount_id | "string" | Pflicht | abgeleitete Umgebungs-ID | Provider-/API-Plan prüfen. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | subscribed_subaccount_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the subaccount, which is subscribed to the multitenant application. |
 | subscribed_tenant_id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The ID of the tenant, which is subscribed to a multitenant application. |
 | subscription_url | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The URL for app users to launch the subscribed application. |
@@ -190,7 +208,7 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 | isolation_segment | "string" | Optional | spaces.*.isolation_segment | UUID; muss der Parent-Org bereits zugeteilt sein. |
 | labels | ["map", "string"] | Optional | spaces.*.labels | map(string), CF-Metadatenregeln gelten; nicht BTP-map(set(string)). |
 | name | "string" | Pflicht | environments.*.cloud_foundry.spaces.*.name | Provider-/API-Plan prüfen. |
-| org | "string" | Pflicht | validierter BTP-Output; im bestehenden DEV-Root unveränderter cf_org_id-Input | UUID; aus dem zugehörigen Workspace-/BTP-Handoff, keine freie YAML-Umleitung. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| org | "string" | Pflicht | validierter BTP-Output; im bestehenden DEV-Root unveränderter cf_org_id-Input | UUID; aus dem zugehörigen Workspace-/BTP-Handoff, keine freie YAML-Umleitung. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | quota | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The space quota applied to the space. To assign a space quota, use the space quota resource instead. |
 | updated_at | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The date and time when the resource was updated in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format. |
 
@@ -202,12 +220,12 @@ API-/Broker-Regeln können darüber hinausgehen; keine Ersatzfreiheit wird zuges
 |---|---|---|---|---|
 | created_at | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The date and time when the resource was created in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format. |
 | id | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The GUID of the object. |
-| origin | "string" | Optional | roles.*.origin / member_origin / legacy_manager.origin / legacy_developer.origin | Benötigt username; nicht zusammen mit user. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| space | "string" | Pflicht | abgeleitete ID des Space mit demselben Schlüssel | UUID; automatisch aus dem Space desselben States. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| type | "string" | Pflicht | spaces.*.roles.*.type / managers/developers / bestehende DEV-Rollen | space_manager, space_developer, space_auditor, space_supporter. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| origin | "string" | Optional | roles.*.origin / member_origin / legacy_manager.origin / legacy_developer.origin | Benötigt username; nicht zusammen mit user. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| space | "string" | Pflicht | abgeleitete ID des Space mit demselben Schlüssel | UUID; automatisch aus dem Space desselben States. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| type | "string" | Pflicht | spaces.*.roles.*.type / managers/developers / bestehende DEV-Rollen | space_manager, space_developer, space_auditor, space_supporter. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 | updated_at | "string" | Nur gelesen, computed | Provider-Ausgabe | Nicht als Input erlaubt. The date and time when the resource was updated in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format. |
-| user | "string" | Optional, computed | roles.*.user / legacy_manager.user / legacy_developer.user | UUID; genau eines von user/username. Origin mit user verboten. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
-| username | "string" | Optional | roles.*.username / managers/developers / Legacy-HCP-Input | Genau eines von user/username; Benutzer braucht bestehende organization_user-Rolle. RequiresReplace (bei service_offering_name: IfConfigured); Löschschutz/State-Abhängigkeiten beachten. |
+| user | "string" | Optional, computed | roles.*.user / legacy_manager.user / legacy_developer.user | UUID; genau eines von user/username. Origin mit user verboten. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
+| username | "string" | Optional | roles.*.username / managers/developers / Legacy-HCP-Input | Genau eines von user/username; Benutzer braucht bestehende organization_user-Rolle. RequiresReplace; Löschschutz/State-Abhängigkeiten beachten. |
 
 ## Jedes YAML-Attribut
 
@@ -430,7 +448,7 @@ zusätzlich im maschinenlesbaren JSON Schema enthalten.
 
 ## Grenzen der Abdeckung
 
-- Alle beschreibbaren Attribute der neun implementierten Ressourcentypen sind direkt oder abgeleitet verbunden.
+- Alle beschreibbaren Attribute der implementierten Ressourcentypen sind direkt oder abgeleitet verbunden.
 - Berechnete Felder wie CF-Environment-custom_labels, Space.quota, IDs, Zeitstempel und Status sind keine YAML-Eingaben.
 - Eine CF-Space-Quota braucht eine eigene Ressource; hier wird keine Schreibfähigkeit erfunden.
 - Broker-Parameterschemas werden nicht vollständig lokal ausgeführt. Die API prüft dienstspezifische Semantik.

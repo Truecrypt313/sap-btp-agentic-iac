@@ -44,7 +44,9 @@ def check_locks(root, base):
         "registry.terraform.io/cloudfoundry/cloudfoundry": "1.18.0",
         "registry.terraform.io/hashicorp/tfe": "0.83.0",
     }
-    for relative in ["BTP/.terraform.lock.hcl", "CloudFoundry/.terraform.lock.hcl", "CloudFoundry/environments/.terraform.lock.hcl"]:
+    for relative in ["BTP/.terraform.lock.hcl", "CloudFoundry/.terraform.lock.hcl", "CloudFoundry/environments/.terraform.lock.hcl", "BTP/projects/.terraform.lock.hcl", "CloudFoundry/projects/.terraform.lock.hcl"]:
+        if not (root / relative).exists():
+            continue  # Unit-test fixtures may intentionally include only legacy roots.
         current = lock_blocks((root / relative).read_text())
         for provider, block in current.items():
             version = re.search(r'version\s*=\s*"([^"]+)"', block).group(1)

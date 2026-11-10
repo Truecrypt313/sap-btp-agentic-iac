@@ -1,0 +1,119 @@
+# AUTO-GENERATED – DO NOT EDIT MANUALLY
+# Quelle: BTP/config/projects/test-neu/; zentraler Service-Katalog
+# yaml-language-server: $schema=../../../schemas/project.schema.json
+configuration:
+  account_type: trial
+  environments:
+    DEV:
+      administrator_options:
+        origin: null
+        role_collection_name: Subaccount Administrator
+      administrators: []
+      administrators_source: yaml
+      beta_enabled: false
+      cloud_foundry:
+        enabled: false
+        name: test-neu-dev
+        plan: trial
+        spaces: {}
+      costcenter: '12345'
+      enabled: false
+      iaas_provider: AWS
+      labels: {}
+      name: Test Neu DEV
+      region: us10
+      role_assignments: {}
+      role_collections: {}
+      runtime: cloudfoundry
+      services:
+        catalog: []
+      subdomain: test-neu-dev
+    PROD:
+      administrator_options:
+        origin: null
+        role_collection_name: Subaccount Administrator
+      administrators: []
+      administrators_source: yaml
+      beta_enabled: false
+      cloud_foundry:
+        enabled: false
+        name: test-neu-prod
+        plan: standard
+        spaces: {}
+      costcenter: '12345'
+      enabled: false
+      iaas_provider: AWS
+      labels: {}
+      name: Test Neu PROD
+      region: us10
+      role_assignments: {}
+      role_collections: {}
+      runtime: cloudfoundry
+      services:
+        catalog: []
+      subdomain: test-neu-prod
+    TEST:
+      administrator_options:
+        origin: null
+        role_collection_name: Subaccount Administrator
+      administrators: []
+      administrators_source: yaml
+      beta_enabled: false
+      cloud_foundry:
+        enabled: false
+        name: test-neu-test
+        plan: trial
+        spaces: {}
+      costcenter: '12345'
+      enabled: false
+      iaas_provider: AWS
+      labels: {}
+      name: Test Neu TEST
+      region: us10
+      role_assignments: {}
+      role_collections: {}
+      runtime: cloudfoundry
+      services:
+        catalog: []
+      subdomain: test-neu-test
+  project_name: Test Neu
+  schema_version: 2
+  service_catalog:
+    alert_standard:
+      instance: {}
+      plan_name: standard
+      profiles:
+      - trial
+      - enterprise
+      service_name: alert-notification
+    feature_flags_dashboard:
+      plan_name: dashboard
+      profiles:
+      - trial
+      - enterprise
+      service_name: feature-flags-dashboard
+      subscription:
+        app_name: feature-flags-dashboard
+    feature_flags_lite:
+      instance: {}
+      plan_name: lite
+      profiles:
+      - trial
+      - enterprise
+      service_name: feature-flags
+    work_zone_standard:
+      plan_name: standard
+      profiles:
+      - trial
+      - enterprise
+      service_name: SAPLaunchpad
+      subscription:
+        app_name: SAPLaunchpad
+deployment_enabled: false
+directory:
+  description: Vorbereitetes Projekt Test Neu
+  enabled: false
+  features:
+  - DEFAULT
+  name: Test_Neu
+project_id: test-neu

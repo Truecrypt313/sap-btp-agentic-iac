@@ -1,0 +1,13 @@
+# Stabile technische ID: Kleinbuchstaben, Ziffern und Bindestriche, maximal
+# 40 Zeichen; muss dem Verzeichnisnamen entsprechen. Nie nach Deployment ändern.
+# Kein SAP-Directory-Identifier. project-abc bleibt für das bestehende Projekt reserviert.
+project_id: test-neu
+# Anzeigename: bestehende Landing-Zone-Zeichenregeln; Directory darf anders heißen.
+project_name: Test Neu
+schema_version: 2
+# trial oder enterprise. Das Feld ändert nicht das Vertragsmodell des SAP-Accounts.
+account_type: trial
+# Pflicht-Boolean. false verhindert sämtliche Projektressourcen und Katalog-/HCP-
+# Reads in den neuen Roots, auch wenn einzelne Environment-Flags später true sind.
+# Nach Deployment kann false Löschungen planen/blockieren: immer Plan prüfen.
+deployment_enabled: false

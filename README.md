@@ -6,6 +6,7 @@ Der Builder erzeugt daraus die versionierte
 [BTP/landing-zone.yaml](BTP/landing-zone.yaml), die HCP unmittelbar verwendet.
 
 - [Konfiguration bearbeiten, bauen und prüfen](docs/CONFIGURATION.md)
+- [Multi-Project-/Directory-Architektur und künftiger Deployment-Ablauf](docs/MULTI_PROJECT_ARCHITECTURE.md)
 - [Nachweis des Konfigurations-Refactorings](docs/CONFIGURATION_REFACTOR_REPORT.md)
 
 - [Deployment, State-Erhalt und Migration](docs/MODULAR_LANDING_ZONE.md)
@@ -19,6 +20,9 @@ Der Builder erzeugt daraus die versionierte
 Die aktive Konfiguration erhält DEV und den bereitgestellten TEST-Subaccount
 einschließlich TEST-CF, Alert Notification, Feature-Flags-Dashboard und dessen
 beiden Role Collections. PROD bleibt im Trial deaktiviert.
+Das zusätzliche Projekt `test-neu` ist mit getrennten Konfigurationsartefakten
+und generischen Roots vorbereitet; Projekt, Directory und alle Stages bleiben
+deaktiviert. Es sind keine zusätzlichen HCP-Workspaces eingerichtet.
 Keine Credentials, persönlichen Zugänge oder State-Dateien in YAML
 oder Git eintragen.
 

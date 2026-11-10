@@ -1,0 +1,23 @@
+# Eigenständiges TEST; alle Schlüssel und Berechtigungen gehören nur test-neu.
+TEST:
+  enabled: false # Pflicht-Boolean; Projekt-Schalter bleibt ebenfalls false.
+  costcenter: "12345" # Pflicht-String, fünf Ziffern.
+  region: us10
+  iaas_provider: AWS
+  runtime: cloudfoundry
+  beta_enabled: false
+  labels: {}
+  # Keine HCP-Legacy-Administratorquellen. Änderungen vergeben/entziehen BTP-Rechte.
+  administrators_source: yaml
+  administrators: []
+  administrator_options: {role_collection_name: Subaccount Administrator, origin: null}
+  role_collections: {}
+  role_assignments: {}
+  # Subdomain und Org erhalten test-neu-test; der Parent ist eine echte
+  # Directory-Ressourcenreferenz oder der Global Account, keine feste YAML-UUID.
+  cloud_foundry:
+    enabled: false
+    plan: trial
+    spaces: {} # Künftig z. B. testing; Rollen gelten nur im jeweiligen CF-Space.
+  services:
+    catalog: [] # Zentral definierte Aliase erst in einem späteren geprüften Plan aktivieren.

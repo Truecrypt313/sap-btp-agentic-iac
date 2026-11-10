@@ -15,10 +15,6 @@ variable "bootstrap_enabled" {
   default     = false
   description = "Enable only after the one-time platform setup and explicit bootstrap approval."
 }
-variable "vcs_auth" {
-  type    = object({ oauth_token_id = optional(string), github_app_installation_id = optional(string) })
-  default = {}
-}
 variable "account_bindings" {
   type    = map(object({ btp_variable_set_ids = set(string), cf_variable_set_ids = set(string) }))
   default = {}
@@ -28,9 +24,9 @@ locals {
 }
 module "workspaces" {
   source           = "../modules/project-workspaces"
-  enabled          = var.bootstrap_enabled && terraform.workspace == "sap-btp-project-bootstrap"
+  enabled          = local.bootstrap_active && local.vcs_valid
   projects         = local.registry.projects
-  vcs_auth         = var.vcs_auth
+  vcs_auth         = local.detected_vcs
   account_bindings = var.account_bindings
 }
 output "project_workspaces" {

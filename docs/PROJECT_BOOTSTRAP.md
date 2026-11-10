@@ -133,11 +133,20 @@ weder Workspace-UI-Konfiguration noch erneutes Eintragen von Credentials nötig.
    und die Bootstrap-Skripte beziehen. Keine automatische Destroy-Zeit oder
    geerbte Projekt-Auto-Destroy-Policy verwenden. Der eigene State enthält
    ausschließlich Bootstrap-Ressourcen; niemals mit einem Legacy-State starten.
-2. Eine bestehende VCS-Autorisierung genau einmal referenzieren:
-   `vcs_auth = {oauth_token_id = "<ot-ID>"}` oder
-   `{github_app_installation_id = "<ghain-ID>"}` als HCL-Terraform-Variable.
-   Dies sind Referenz-IDs, keine OAuth-Secret-Werte. Die tatsächliche GitHub-
-   Autorisierung wird einmalig in HCP eingerichtet.
+2. Die vorhandene Verbindung wird automatisch und ausschließlich lesend
+   ermittelt. Der Root liest mit `data.tfe_workspace.vcs_reference` die tatsächliche
+   VCS-Bindung von `sap-btp-core` und verlangt exakt das Repository
+   `Truecrypt313/sap-btp-agentic-iac` sowie genau eine gültige Authentifizierung.
+   Für GitHub App folgt `data.tfe_github_app_installation.repository` mit
+   `name = "Truecrypt313"`. Verwendet wird dessen interne `.id` (`ghain-…`),
+   nicht die numerische GitHub-`installation_id`. Die ID muss exakt der bereits
+   für dieses Repository verwendeten Installation entsprechen.
+   Bei tatsächlich verwendetem OAuth wird nur der passende native
+   `tfe_oauth_client` für GitHub übernommen, einschließlich Token-ID-Abgleich und
+   Prüfung von `https://github.com`. Es gibt keinen OAuth-Fallback auf Verdacht.
+   Der Root-Input `vcs_auth` entfällt; IDs müssen nicht mehr manuell eingegeben
+   werden. Der interne Moduleingang wird automatisch befüllt. Vorhandene
+   Workspaces werden dadurch weder umkonfiguriert noch importiert.
 3. Für **HCP Terraform Free (dauerhaft)** einmalig einen HCP-**User-API-Token**
    des für die Automatisierung verwendeten Organisations-Owners bereitstellen.
    Der Owner besitzt die für Workspace-Erstellung und Run-Bestätigung nötigen
@@ -242,6 +251,24 @@ aktuellen Run/Workspace gebunden und wird unverändert beibehalten. Die drei
 bestehenden Project-ABC-Workspaces werden weder für diese Korrektur noch für
 neue Freigaben umkonfiguriert.
 
+### Sichere native VCS-Erkennung
+
+Alle drei Datenquellen verwenden den bereits konfigurierten TFE-Provider 0.83.0
+und dessen `TFE_TOKEN`. Es gibt keine neue Python-/API-Implementierung und keine
+zusätzlichen Credentials. Bei `bootstrap_enabled=false` (oder falschem
+Bootstrap-Workspace) gilt jeweils `count = 0`: keine Referenz-, App- oder OAuth-
+Verbindung erforderlich. Andere ausdrücklich aktivierte HCP-Operationen benötigen
+weiterhin ihre konfigurierte Authentifizierung.
+
+Die Namenssuche von TFE 0.83.0 ist allein keine Eindeutigkeitsgarantie: Der
+Provider kann bei mehreren passenden Installationen den letzten Treffer liefern.
+Deshalb ist die tatsächlich verwendete Repository-Bindung der verbindliche
+ID-Anker. Ein abweichender Treffer, mehrere Referenzbindungen, gleichzeitig
+App/OAuth, eine fehlende Installation, fremde Repository-Zuordnung oder ein
+unpassender OAuth-Client stoppt den Plan. Namensgleichheit allein legitimiert
+keine Verbindung. Wird eine Verbindung außerhalb von Terraform umgestellt,
+ist ein neuer geprüfter Plan nötig; es gibt keinen VCS-Retry oder stillen Ersatz.
+
 ## Merge, Plan, Freigabe und Drift
 
 1. Die Projekt-CLI bereitet einen lokalen Feature-Branch und Commit vor;
@@ -330,6 +357,9 @@ gesonderten Auftrag offen. Testzahlen und commitbezogene CI-Nachweise stehen im 
 Primärquellen der gepinnten Versionen:
 [TFE Workspace](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/r/workspace.html.markdown),
 [Workspace Settings](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/r/workspace_settings.html.markdown),
+[Native GitHub-App-Datenquelle](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/d/github_app_installation.html.markdown),
+[Namensauflösung in Provider 0.83.0](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/internal/provider/github_app_installation_helpers.go),
+[Native OAuth-Datenquelle](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/d/oauth_client.html.markdown),
 [Variable-Set-Anbindung](https://github.com/hashicorp/terraform-provider-tfe/blob/v0.83.0/website/docs/r/workspace_variable_set.html.markdown),
 [Runs-API](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run),
 [User-Token und Berechtigungen](https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens),

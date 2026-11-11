@@ -29,6 +29,19 @@ class ProjectBootstrapTests(unittest.TestCase):
         for directory in ["BTP/config", "BTP/generated", "templates"]:
             shutil.copytree(ROOT / directory, self.root / directory)
         shutil.copyfile(ROOT / "BTP/landing-zone.yaml", self.root / "BTP/landing-zone.yaml")
+
+        # Isolate the original inactive-project registration fixture.
+        project_file = self.root / "BTP/config/projects/test-neu/project.yaml"
+        project_data = load_mapping(project_file)
+        project_data["deployment_enabled"] = False
+        project_file.write_text(yaml.safe_dump(project_data, sort_keys=False))
+
+        directory_file = self.root / "BTP/config/projects/test-neu/directory.yaml"
+        directory_data = load_mapping(directory_file)
+        directory_data["directory"]["enabled"] = False
+        directory_file.write_text(yaml.safe_dump(directory_data, sort_keys=False))
+
+        build_projects(self.root)
         # This fixture deliberately exercises explicit registration of an existing project.
         (self.root / "BTP/config/projects/test-neu/bootstrap.yaml").unlink(missing_ok=True)
         (self.root / ".gitignore").write_text("/.project-bootstrap.lock\n")

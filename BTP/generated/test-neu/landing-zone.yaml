@@ -110,10 +110,10 @@ configuration:
       service_name: SAPLaunchpad
       subscription:
         app_name: SAPLaunchpad
-deployment_enabled: false
+deployment_enabled: true
 directory:
   description: Vorbereitetes Projekt Test Neu
-  enabled: false
+  enabled: true
   features:
   - DEFAULT
   name: Test_Neu

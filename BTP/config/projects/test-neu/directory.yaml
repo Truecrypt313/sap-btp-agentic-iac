@@ -3,7 +3,7 @@ directory:
   # Pflicht-Boolean: false erstellt kein Directory. Projekt bleibt zusätzlich aus.
   # Ein vorhandenes eigenes Directory wird später ausschließlich über den geprüften
   # HCP-Input existing_directory_id referenziert, niemals erneut erstellt/importiert.
-  enabled: false
+  enabled: true
   name: Test_Neu
   # Optionaler String/null; keine Secrets. Änderungen können SAP-Metadaten ändern.
   description: Vorbereitetes Projekt Test Neu

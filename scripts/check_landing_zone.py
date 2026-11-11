@@ -188,6 +188,17 @@ def main():
                 project_canonical = checkout / "BTP/generated/test-neu/landing-zone.yaml"
                 project_original = project_canonical.read_bytes()
                 try:
+                    if relative in ["BTP/projects", "CloudFoundry/projects"]:
+                        # Run inactive-project regressions against an
+                        # isolated fixture, independent of deployment phase.
+                        inactive = yaml.safe_load(project_original)
+                        inactive["deployment_enabled"] = False
+                        inactive["directory"]["enabled"] = False
+                        for stage in inactive["configuration"]["environments"].values():
+                            stage["enabled"] = False
+                            stage["cloud_foundry"]["enabled"] = False
+                        project_canonical.write_text(json.dumps(inactive))
+
                     if relative == "CloudFoundry/environments":
                         canonical.write_bytes((checkout / "examples/landing-zone.enterprise.yaml").read_bytes())
                     if relative == "BTP/modules/directory":

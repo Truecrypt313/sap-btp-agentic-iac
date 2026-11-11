@@ -10,4 +10,4 @@ account_type: trial
 # Pflicht-Boolean. false verhindert sämtliche Projektressourcen und Katalog-/HCP-
 # Reads in den neuen Roots, auch wenn einzelne Environment-Flags später true sind.
 # Nach Deployment kann false Löschungen planen/blockieren: immer Plan prüfen.
-deployment_enabled: false
+deployment_enabled: true

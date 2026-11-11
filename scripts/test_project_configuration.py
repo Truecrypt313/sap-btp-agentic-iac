@@ -53,12 +53,12 @@ class ProjectTests(unittest.TestCase):
         build_projects(self.root, check=True)
         self.assertTrue((self.root / "BTP/generated/second-project/landing-zone.yaml").exists())
 
-    def test_legacy_artifact_byte_identical_and_projects_inactive(self):
+    def test_legacy_artifact_byte_identical_and_directory_activation(self):
         build_projects(self.root)
         self.assertEqual((self.root / "BTP/landing-zone.yaml").read_bytes(), (ROOT / "BTP/landing-zone.yaml").read_bytes())
         project = collect_projects(self.root)["test-neu"]
-        self.assertFalse(project["deployment_enabled"])
-        self.assertFalse(project["directory"]["enabled"])
+        self.assertTrue(project["deployment_enabled"])
+        self.assertTrue(project["directory"]["enabled"])
         for env in project["configuration"]["environments"].values():
             self.assertFalse(env["enabled"])
             self.assertFalse(env["cloud_foundry"]["enabled"])
